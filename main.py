@@ -3,24 +3,38 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def histogram(img, img_norm, title):
-    hist, bin_edges = np.histogram(img, bins=256, range=(0, 255))
-    hist_norm, bin_edges_norm = np.histogram(img_norm, bins=256, range=(0, 255))
-    plt.figure()
-    plt.title(title)
+def histogram(imgs, labels):
+    r"""
+    Create N histograms
+    :param imgs: number of images of histograms to be created
+    :param labels: number of labes of histograms to be created
+    """
+
+    if len(imgs) != len(labels):
+        raise Exception("The size of images and labels must be the same")
+
+    for img in imgs:
+        hist, bin_edges = np.histogram(img, bins=256, range=(0, 255))
+        plt.plot(bin_edges[0:-1], hist)
+
+    # TODO added labels to histogram
+    plt.title("Histogram")
     plt.xlabel("Grayscale values")
     plt.ylabel("Pixels")
     plt.xlim([0.0, 255.0])
-
-    plt.plot(bin_edges[0:-1], hist)
-    plt.plot(bin_edges_norm[0:-1], hist_norm)
     plt.show()
 
 
 def preprocessing(img):
+    r"""
+    Performs pre-processing operations
+    :param img: image to be processed
+    :return: pre-processed image
+    """
+
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
-    # histogram(img_gray, img_norm, "Grayscale Histogram")
+    histogram([img_gray, img_norm], ["Grayscale", "Normalized"])
 
     # Median filter (noise reduction)
     img_filtered = cv.medianBlur(img_norm, 3)
@@ -43,7 +57,7 @@ def detect_crack(img):
 
 
 def detect_pinhole_defects():
-    p_conut = 0  # Pinhole count
+    p_count = 0  # Pinhole count
     c_range = 0  # Range del corner
     e_range = 0  # Range degli edge
     row = 0  # Maximum number of image pixels along any row
