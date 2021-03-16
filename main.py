@@ -1,60 +1,62 @@
 import cv2 as cv
+import matplotlib.pyplot as plt
 import numpy as np
 
-img = cv.imread("Resources/crackTile.jpg")
 
+def histogram(img, img_norm, title):
+    hist, bin_edges = np.histogram(img, bins=256, range=(0, 255))
+    hist_norm, bin_edges_norm = np.histogram(img_norm, bins=256, range=(0, 255))
+    plt.figure()
+    plt.title(title)
+    plt.xlabel("Grayscale values")
+    plt.ylabel("Pixels")
+    plt.xlim([0.0, 255.0])
 
-def scrool_image(img, name):
-    height, width = img.shape
-    count_1 = 0
-    count_0 = 0
-    for i in range(0, height):
-        for j in range(0, width):
-            if img[i, j] == 1:
-                # print(str(img[i, j]) + "\n")
-                count_1 += 1
-            if img[i, j] == 0:
-                # print(str(img[i, j]) + "\n")
-                count_0 += 1
-
-    print(f"{name} Num pixel 1:{count_1}")
-    print(f"{name} Num pixel 0: {count_0}")
+    plt.plot(bin_edges[0:-1], hist)
+    plt.plot(bin_edges_norm[0:-1], hist_norm)
+    plt.show()
 
 
 def preprocessing(img):
-    # Conversion to grayscale
-    img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-
     # Normalization
-    img = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
+    img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
+    # histogram(img_gray, img_norm, "Grayscale Histogram")
 
-    # Median filter
-    median = cv.medianBlur(img, 3)  # TODO possibilità di provare anche con 5
+    # Median filter (noise reduction)
+    img_filtered = cv.medianBlur(img_norm, 3)
+
+    # Median value grayscale
+    median_value = img_filtered.mean()
 
     # Edge Detection
-    canny = cv.Canny(median, 100, 150)
+    img_edge = cv.Canny(img_filtered, 0.66 * median_value, 1.33 * median_value)
 
-    sobel_grad_x = cv.Sobel(median, cv.CV_64F, 1, 0, ksize=3)
-    sobel_grad_y = cv.Sobel(median, cv.CV_64F, 0, 1, ksize=3)
-
-    sobel_abs_grad_x = cv.convertScaleAbs(sobel_grad_x)
-    sobel_abs_grad_y = cv.convertScaleAbs(sobel_grad_y)
-
-    sobel = cv.addWeighted(sobel_abs_grad_x, 0.5, sobel_abs_grad_y, 0.5, 0)
-
-    # print(f"Sobel size: {sobel.shape}")
-    # print(f"Canny size: {canny.shape}")
-    # scrool_image(sobel, "Sobel")
-    # scrool_image(canny, "Canny")
-    #
-    # print(f"Canny. Min {canny.min()}, max: {canny.max()}")
-    # print(f"Sobel. Min {sobel.min()}, max: {sobel.max()}")
-    return sobel, canny
+    return img_edge
 
 
+def detect_crack(img):
+    height, width = img.shape
+    for x in range(0, height):
+        for y in range(0, width):
+            if img[x, y] == 1:
+                pass
+
+
+def detect_pinhole_defects():
+    p_conut = 0  # Pinhole count
+    c_range = 0  # Range del corner
+    e_range = 0  # Range degli edge
+    row = 0  # Maximum number of image pixels along any row
+    col = 0  # Maximum number of image pixels along any column
+
+
+img = cv.imread("Resources/crackTile.jpg")
 cv.imshow("Img original", img)
-_, img = preprocessing(img)
-cv.imshow("Img result", img)
 
+img_gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 
+img_pre_processing = preprocessing(img_gray)
+# TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
+
+cv.imshow("Img result canny", img_pre_processing)
 cv.waitKey(0)
