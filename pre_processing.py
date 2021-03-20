@@ -36,15 +36,15 @@ def start(img):
 
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
-    # histogram([img_gray, img_norm], ["Grayscale", "Normalized"])
 
     # Median filter (noise reduction)
-    img_filtered = cv.medianBlur(img_norm, 3)
-
-    # Median value grayscale
-    median_value = img_filtered.mean()
+    img_filt = cv.medianBlur(img_norm, 3)
+    # histogram([img, img_filt], ["Grayscale", "Filtered"])
 
     # Edge Detection
-    img_edge = cv.Canny(img_filtered, 0.66 * median_value, 1.33 * median_value)
+    median_value = img_filt.mean()
+    img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)
 
-    return img_edge
+    # TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
+
+    return img_edge / 255.0
