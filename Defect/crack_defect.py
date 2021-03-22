@@ -10,7 +10,7 @@ from scipy.ndimage.measurements import label
 
 def detect(img):
     r"""
-    Detects cracks in the tiles
+    Detects cracks in the image
     :param img: image in which to detect cracks
     :return: binary image with cracks detected
     """
