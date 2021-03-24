@@ -27,9 +27,10 @@ def histogram(imgs, labels):
     plt.show()
 
 
-def start(img):
+def start(img, method="Sobel"):
     r"""
     Performs pre-processing operations
+    :param method: edge detection method (canny, sobel)
     :param img: image to be processed
     :return: pre-processed image
     """
@@ -42,9 +43,27 @@ def start(img):
     # histogram([img, img_filt], ["Grayscale", "Filtered"])
 
     # Edge Detection
-    median_value = img_filt.mean()
-    img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)
+    if method == "Canny":
+        median_value = img_filt.mean()
+        #img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
+        img_edge = cv.Canny(img_filt, 50, 150)
+
+    elif method == "Sobel":
+
+        scale = 1
+        delta = 0
+        ddepth = cv.CV_16S
+
+        grad_x = cv.Sobel(img_filt, ddepth, 1, 0, ksize=3, scale=scale, delta=delta, borderType=cv.BORDER_DEFAULT)
+        grad_y = cv.Sobel(img_filt, ddepth, 0, 1, ksize=3, scale=scale, delta=delta, borderType=cv.BORDER_DEFAULT)
+
+        abs_grad_x = cv.convertScaleAbs(grad_x)
+        abs_grad_y = cv.convertScaleAbs(grad_y)
+
+        img_edge = cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
+
+    else:
+        raise Exception("Specify the edge detection method: Canny or Sobel")
 
     # TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
-
     return img_edge / 255.0

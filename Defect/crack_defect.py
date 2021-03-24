@@ -8,9 +8,10 @@ from scipy.ndimage.measurements import label
 #  2- range delle componenti connesse;
 #  3- energia.
 
-def detect(img):
+def detect(img, method= "Sobel"):
     r"""
     Detects cracks in the image
+    :param method: edge detection method (canny, sobel)
     :param img: image in which to detect cracks
     :return: binary image with cracks detected
     """
@@ -22,7 +23,7 @@ def detect(img):
 
     height, width = img.shape
 
-    cracks = connected_components(img)
+    cracks = connected_components(img, method)
     result = np.zeros((height, width))
 
     if len(cracks) != 0:
@@ -44,21 +45,32 @@ def detect(img):
     return result
 
 
-def connected_components(img):
+def connected_components(img, method):
     r"""
     Detect connected components in an image
+    :param method: edge detection method (canny, sobel)
     :param img: image in which to detect connected components
     :return: stack with the coordinates of the detected cracks
     """
 
     height, width = img.shape
 
+    if method == "Sobel":
+        value_found = 0.098
+        crack_lenght = 200
+
+    elif method == "Canny":
+        value_found = 1
+        crack_lenght = 20
+
+    else:
+        raise Exception("Specify the edge detection method: Canny or Sobel")
+
     visited = np.zeros((height, width), dtype=bool)
 
     tmp_stack = []
     coordinates_result_cracks = []
     coordinates_current_component = []
-    crack_lenght = 10
 
     # Depth-first search (DFS)
     for i in range(0, height):
@@ -85,49 +97,49 @@ def connected_components(img):
 
                     if x - 1 >= 0 and y - 1 >= 0:
                         p1 = img[x - 1, y - 1]
-                        if p1 == 1 and not visited[x - 1, y - 1]:
+                        if p1 >= value_found and not visited[x - 1, y - 1]:
                             tmp_stack.append((x - 1, y - 1))
                             visited[x - 1, y - 1] = True
 
                     if x - 1 >= 0:
                         p2 = img[x - 1, y]
-                        if p2 == 1 and not visited[x - 1, y]:
+                        if p2 >= value_found and not visited[x - 1, y]:
                             tmp_stack.append((x - 1, y))
                             visited[x - 1, y] = True
 
                     if x - 1 >= 0 and y + 1 < width:
                         p3 = img[x - 1, y + 1]
-                        if p3 == 1 and not visited[x - 1, y + 1]:
+                        if p3 >= value_found and not visited[x - 1, y + 1]:
                             tmp_stack.append((x - 1, y + 1))
                             visited[x - 1, y + 1] = True
 
                     if y - 1 >= 0:
                         p4 = img[x, y - 1]
-                        if p4 == 1 and not visited[x, y - 1]:
+                        if p4 >= value_found and not visited[x, y - 1]:
                             tmp_stack.append((x, y - 1))
                             visited[x, y - 1] = True
 
                     if y + 1 < width:
                         p5 = img[x, y + 1]
-                        if p5 == 1 and not visited[x, y + 1]:
+                        if p5 >= value_found and not visited[x, y + 1]:
                             tmp_stack.append((x, y + 1))
                             visited[x, y + 1] = True
 
                     if x + 1 < height and y - 1 >= 0:
                         p6 = img[x + 1, y - 1]
-                        if p6 == 1 and not visited[x + 1, y - 1]:
+                        if p6 >= value_found and not visited[x + 1, y - 1]:
                             tmp_stack.append((x + 1, y - 1))
                             visited[x + 1, y - 1] = True
 
                     if x + 1 < height:
                         p7 = img[x + 1, y]
-                        if p7 == 1 and not visited[x + 1, y]:
+                        if p7 >= value_found and not visited[x + 1, y]:
                             tmp_stack.append((x + 1, y))
                             visited[x + 1, y] = True
 
                     if x + 1 < height and y + 1 < width:
                         p8 = img[x + 1, y + 1]
-                        if p8 == 1 and not visited[x + 1, y + 1]:
+                        if p8 >= value_found and not visited[x + 1, y + 1]:
                             tmp_stack.append((x + 1, y + 1))
                             visited[x + 1, y + 1] = True
 
