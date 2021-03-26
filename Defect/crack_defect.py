@@ -86,7 +86,6 @@ def connected_components(img, method):
             else:
                 visited[i, j] = True
                 tmp_stack.append((i, j))
-                # id_components += 1
 
                 while len(tmp_stack) != 0:
 
