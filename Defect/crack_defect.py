@@ -8,9 +8,10 @@ from scipy.ndimage.measurements import label
 #  2- range delle componenti connesse;
 #  3- energia.
 
-def detect(img, method= "Sobel"):
+def detect(img_original, img, method="Sobel"):
     r"""
     Detects cracks in the image
+    :param img_original: original image in which to draw the defects
     :param method: edge detection method (canny, sobel)
     :param img: image in which to detect cracks
     :return: binary image with cracks detected
@@ -35,14 +36,9 @@ def detect(img, method= "Sobel"):
         result = result.astype('uint8')
         contours, hierarchy = cv.findContours(result, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         for cnt in contours:
-            cv.drawContours(result, cnt, -1, (255, 255, 255), 2)
+            cv.drawContours(img_original, cnt, -1, (255, 255, 255), 2)
 
-    # np.set_printoptions(threshold=sys.maxsize, formatter={"float": "{: .0f}".format})
-    # print(all_component_connected)
-    # print(f"CV2 Components {nb_components}")
-    # print(f"My components {id_components}")
-
-    return result
+    return img_original
 
 
 def connected_components(img, method):
