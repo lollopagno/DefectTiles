@@ -27,13 +27,15 @@ def histogram(imgs, labels):
     plt.show()
 
 
-def start(img, method="Sobel"):
+def start(img, method):
     r"""
     Performs pre-processing operations
     :param method: edge detection method (canny, sobel)
     :param img: image to be processed
     :return: pre-processed image
     """
+
+    img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
@@ -61,9 +63,6 @@ def start(img, method="Sobel"):
         abs_grad_y = cv.convertScaleAbs(grad_y)
 
         img_edge = cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
-
-    else:
-        raise Exception("Specify the edge detection method: Canny or Sobel")
 
     # TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
     return img_edge / 255.0
