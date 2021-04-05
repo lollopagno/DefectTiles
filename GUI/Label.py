@@ -2,6 +2,9 @@ from tkinter import Frame, Label, TOP, LEFT, X
 
 
 class TitleEntry(Frame):
+    r"""
+    Class Title Label
+    """
     def __init__(self, parent):
         super().__init__(parent)
         self.pack(fill=X)
@@ -10,7 +13,22 @@ class TitleEntry(Frame):
         label.pack(side=TOP, padx=400, pady=10)
 
 
+class FilterEntry(Frame):
+    r"""
+    Class Filter Label
+    """
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.pack(fill=X)
+
+        label = Label(self, text="Filter:", width=6, font=('Arial', 13, "underline"))
+        label.pack(side=LEFT, padx=12)
+
+
 class EdgeDetectionEntry(Frame):
+    r"""
+    Class Edge detection Label
+    """
     def __init__(self, parent):
         super().__init__(parent)
         self.pack(fill=X)
@@ -19,15 +37,26 @@ class EdgeDetectionEntry(Frame):
         label.pack(side=LEFT, padx=12)
 
 
-class ErrorEdgeDetectionEntry(Frame):
+class ErrorEntry(Frame):
+    r"""
+    Class Error Label
+    """
     def __init__(self, parent):
         super().__init__(parent)
         self.pack(fill=X)
-        self.label = Label(self, text="Specify the edge detection method: Canny or Sobel!", width=38, fg="red",
-                           font=('Arial', 11))
+        self.label = None
 
-    def enabled(self):
+    def enabled(self, text, width):
+        r"""
+        Show the label
+        :param text: text to show
+        :param width: with of the label
+        """
+        self.label = Label(self, text=text, width=width, fg="red", font=('Arial', 11))
         self.label.pack(side=LEFT, padx=10, pady=30)
 
     def disabled(self):
+        r"""
+        Hide the label
+        """
         self.label.pack_forget()
