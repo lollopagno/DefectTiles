@@ -2,6 +2,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 
+img_edge = []
 
 def histogram(imgs, labels):
     r"""
@@ -35,6 +36,7 @@ def start(img, method):
     :return: pre-processed image
     """
 
+    global img_edge
     img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 
     # Normalization
