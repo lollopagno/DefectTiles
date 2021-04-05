@@ -13,7 +13,7 @@ method = "Sobel"
 img_gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 
 # Preprocessing
-img_pre_processing = preprocess.start(img_gray, method=method)
+img_pre_processing = preprocess.start(img_gray, method_edge_detection=method)
 
 # Pinhole defect
 # pinhole.detect(img_pre_processing)
