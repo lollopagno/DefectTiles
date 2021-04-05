@@ -21,13 +21,14 @@ class ButtonEntry(Frame):
         self.pack(fill=X)
         self.stateCheckBox = None
         self.imageClass = Images.ImageEntry(self)
-        self.labelErrEdgeDetect = Label.ErrorEdgeDetectionEntry(self)
 
         btnUpload = Button(self, text="Upload", command=self.open_img)
         btnUpload.pack(side=LEFT, padx=20, pady=30)
 
         btnExit = Button(self, text="Exit", command=self.quit)
-        btnExit.pack(side=LEFT, fill=X, padx=10)
+        btnExit.pack(side=LEFT, fill=X, padx=5)
+
+        self.labelErrEdgeDetect = Label.ErrorEdgeDetectionEntry(self)
 
     def open_img(self):
         try:
