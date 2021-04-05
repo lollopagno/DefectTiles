@@ -4,6 +4,7 @@ import numpy as np
 
 img_edge = []
 
+
 def histogram(imgs, labels):
     r"""
     Create N histograms
@@ -28,31 +29,39 @@ def histogram(imgs, labels):
     plt.show()
 
 
-def start(img, method):
+def start(img, filter, method_edge_detection):
     r"""
     Performs pre-processing operations
-    :param method: edge detection method (canny, sobel)
+    :param filter: type of filter to apply
+    :param method_edge_detection: edge detection method (canny, sobel)
     :param img: image to be processed
     :return: pre-processed image
     """
 
     global img_edge
+
+    # Conversion color from RGB to grayscale
     img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
 
-    # Median filter (noise reduction)
-    img_filt = cv.medianBlur(img_norm, 3)
+    # Applying the filter (noise reduction)
+    if filter == "Median":
+        img_filt = cv.medianBlur(img_norm, 3)
+    elif filter == "Gaussian":
+        img_filt = cv.GaussianBlur(img_norm, (3, 3), 0)
+    else:
+        img_filt = cv.bilateralFilter(img_norm, 3, 75, 75)
     # histogram([img, img_filt], ["Grayscale", "Filtered"])
 
     # Edge Detection
-    if method == "Canny":
-        median_value = img_filt.mean()
-        #img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
+    if method_edge_detection == "Canny":
+        # median_value = img_filt.mean()
+        # img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
         img_edge = cv.Canny(img_filt, 50, 150)
 
-    elif method == "Sobel":
+    elif method_edge_detection == "Sobel":
 
         scale = 1
         delta = 0
