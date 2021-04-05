@@ -5,12 +5,17 @@ from tkinter import Frame
 from GUI import Label
 from GUI import Button
 from GUI import Settings
+from GUI import Images
 
 SIZE_WINDOW = "1000x700"
 ICON = "Resources/Icon/icon.ico"
 TITLE = "Defect tiles"
 
+
 class App(Tk):
+    r"""
+    Class App GUI
+    """
     def __init__(self):
         super().__init__()
         frame = Frame(self)
@@ -21,12 +26,20 @@ class App(Tk):
         self.geometry(SIZE_WINDOW)
         self.resizable(width=True, height=True)
 
-        Label.TitleEntry(frame)
-        btn = Button.ButtonEntry(frame)
-        Label.EdgeDetectionEntry(frame)
-        settings = Settings.SettingsEntry(frame)
+        Label.TitleEntry(frame)                                     # Title
+        buttons = Button.ButtonEntry(frame)                         # Button: upload, exit
 
-        btn.setStateCheckbox(settings)
+        Label.FilterEntry(frame)                                    # Label filter
+        settingFilter = Settings.SettingsFilterEntry(frame)         # Checkbox filter
+
+        Label.EdgeDetectionEntry(frame)                             # Label edge detection
+        settingDetection = Settings.SettingsDetectionEntry(frame)   # Checkbox detection
+
+        images = Images.ImageEntry(frame)                           # Images
+
+        buttons.setStateCheckboxDetection(settingDetection)
+        buttons.setStateCheckboxFilter(settingFilter)
+        buttons.setObjImages(images)
 
 
 if __name__ == "__main__":
