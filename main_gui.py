@@ -37,9 +37,9 @@ class App(Tk):
 
         images = Images.ImageEntry(frame)                           # Images
 
-        buttons.setStateCheckboxDetection(settingDetection)
-        buttons.setStateCheckboxFilter(settingFilter)
-        buttons.setObjImages(images)
+        buttons.set_state_checkbox_detection(settingDetection)
+        buttons.set_state_checkbox_filter(settingFilter)
+        buttons.set_obj_images(images)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from Defect import crack_defect as crack
 import cv2 as cv
 
 
-def openfilename():
+def open_file_name():
     r"""
     Select the image from a folder
     :return: selected image
@@ -35,73 +35,80 @@ class ButtonEntry(Frame):
 
         self.labelErr = Label.ErrorEntry(self)
 
+    def check_state_checkbox(self):
+        r"""
+         Check the current state of the checkbox filters and edge detection methods.
+        :return: filter and edge detection method chosen by the user
+        """
+        self.labelErr.disabled()
+
+        # Check state check box filter
+        median, gaussian, bilateral = self.stateCheckBoxFilter.get_state()
+        if (median and gaussian and bilateral) or (median and gaussian) or (median and bilateral) or (
+                gaussian and bilateral) or (not median and not gaussian and not bilateral):
+            self.labelErr.enabled("Specify the filter to apply: median, gaussian or bilateral!", 40)
+            raise Exception("Error filter!")
+        elif median:
+            filter = "Median"
+        elif gaussian:
+            filter = "Gaussian"
+        else:
+            filter = "Bilateral"
+
+        self.labelErr.disabled()
+
+        # Check state check box edge detection method
+        sobel, canny = self.stateCheckBoxDetection.get_state()
+        if (sobel and canny) or (not sobel and not canny):
+            self.labelErr.enabled("Specify the edge detection method: Canny or Sobel!", 38)
+            raise Exception("Error edge detection!")
+        elif sobel:
+            method_edge_detection = "Sobel"
+        else:
+            method_edge_detection = "Canny"
+
+        self.labelErr.disabled()
+        return filter, method_edge_detection
+
     def open_img(self):
         r"""
-        Check the current state of the checkbox filters and edge detection methods.
         Open the image after press buttton upload
         """
         try:
-            self.labelErr.disabled()
 
-            # Check state check box filter
-            median, gaussian, bilateral = self.stateCheckBoxFilter.getState()
-            if (median and gaussian and bilateral) or (median and gaussian) or (median and bilateral) or (
-                    gaussian and bilateral) or (not median and not gaussian and not bilateral):
-                self.labelErr.enabled("Specify the filter to apply: median, gaussian or bilateral!", 40)
-                raise Exception("Error filter!")
-            elif median:
-                filter = "Median"
-            elif gaussian:
-                filter = "Gaussian"
-            else:
-                filter = "Bilateral"
-
-            self.labelErr.disabled()
-
-            # Check state check box edge detection method
-            sobel, canny = self.stateCheckBoxDetection.getState()
-            if (sobel and canny) or (not sobel and not canny):
-                self.labelErr.enabled("Specify the edge detection method: Canny or Sobel!", 38)
-                raise Exception("Error edge detection!")
-            elif sobel:
-                method_edge_detection = "Sobel"
-            else:
-                method_edge_detection = "Canny"
-
-            self.labelErr.disabled()
-
-            path = openfilename()
+            filter, edge_detection = self.check_state_checkbox()
+            path = open_file_name()
             if path != "":
                 img = cv.imread(path)
                 imgOriginal = img.copy()
-                img = resizeImage(img)
+                img = resize_image(img)
 
                 # self.objImage.enabledScrool()
                 self.objImage.addImage(img)
 
                 img_pre_processing = preprocess.start(imgOriginal, filter=filter, method_edge_detection=filter)
-                img_crack = crack.detect(img_pre_processing, method=method_edge_detection)
-                img_crack = convertCVToPIL(img_crack)
+                img_crack = crack.detect(img_pre_processing, method=edge_detection)
+                img_crack = convert_cv_to_pil(img_crack)
                 self.objImage.addImage(img_crack)
 
         except Exception as e:
             print(e)
 
-    def setStateCheckboxDetection(self, state):
+    def set_state_checkbox_detection(self, state):
         r"""
         Set the state of the checkbox detection methods
         :param state: state of the checkbox detection methods
         """
         self.stateCheckBoxDetection = state
 
-    def setStateCheckboxFilter(self, state):
+    def set_state_checkbox_filter(self, state):
         r"""
         Set the state of the checkbox filter
         :param state: state of the checkbox filter
         """
         self.stateCheckBoxFilter = state
 
-    def setObjImages(self, objImage):
+    def set_obj_images(self, objImage):
         r"""
         Saves the instance of the object
         :param objImage: instance of the object of images
@@ -109,7 +116,7 @@ class ButtonEntry(Frame):
         self.objImage = objImage
 
 
-def resizeImage(img):
+def resize_image(img):
     r"""
     Resizesthe image
     :param img: image to resize
@@ -122,10 +129,10 @@ def resizeImage(img):
         width = 400
 
     imgResized = cv.resize(img, (height, width))
-    return convertCVToPIL(imgResized)
+    return convert_cv_to_pil(imgResized)
 
 
-def convertCVToPIL(img):
+def convert_cv_to_pil(img):
     r"""
     Convert the image from open-cv to PIL
     :param img: image in open-cv to convert

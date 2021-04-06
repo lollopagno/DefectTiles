@@ -16,7 +16,7 @@ class SettingsDetectionEntry(Frame):
         canny = Checkbutton(self, text="Canny", variable=self.varCanny)
         canny.pack(side=LEFT, fill=X, padx=10)
 
-    def getState(self):
+    def get_state(self):
         r"""
         Return the state of this checkbox
         """
@@ -42,7 +42,7 @@ class SettingsFilterEntry(Frame):
         var = Checkbutton(self, text="Bilateral", variable=self.varBilateral)
         var.pack(side=LEFT, fill=X, padx=10)
 
-    def getState(self):
+    def get_state(self):
         r"""
         Return the state of this checkbox
         """
