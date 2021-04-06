@@ -44,7 +44,7 @@ class ErrorEntry(Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.pack(fill=X)
-        self.label = None
+        self.label = Label(self, text="", width=0, fg="red", font=('Arial', 11))
 
     def enabled(self, text, width):
         r"""

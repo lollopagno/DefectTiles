@@ -41,6 +41,8 @@ class ButtonEntry(Frame):
         Open the image after press buttton upload
         """
         try:
+            self.labelErr.disabled()
+
             # Check state check box filter
             median, gaussian, bilateral = self.stateCheckBoxFilter.getState()
             if (median and gaussian and bilateral) or (median and gaussian) or (median and bilateral) or (
