@@ -84,12 +84,15 @@ class ButtonEntry(Frame):
                 img = resize_image(img)
 
                 # self.objImage.enabledScrool()
-                self.objImage.addImage(img)
+                self.objImage.add_image(img)
 
+                # Pre processing
                 img_pre_processing = preprocess.start(imgOriginal, filter=filter, edge_detection=edge_detection)
+
+                # Crack Detect
                 img_crack = crack.detect(img_pre_processing, method=edge_detection)
                 img_crack = convert_cv_to_pil(img_crack)
-                self.objImage.addImage(img_crack)
+                self.objImage.add_image(img_crack)
 
         except Exception as e:
             print(e)
@@ -134,10 +137,11 @@ def resize_image(img):
 
 def convert_cv_to_pil(img):
     r"""
-    Convert the image from open-cv to PIL
+    Convert the image from open-cv to PIL, resize image
     :param img: image in open-cv to convert
     :return: image PIL to be converted
     """
+    img = cv.resize(img, (200, 200))
     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
     img = Image.fromarray(img)
     return ImageTk.PhotoImage(img)
