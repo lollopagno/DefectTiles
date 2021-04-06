@@ -86,7 +86,7 @@ class ButtonEntry(Frame):
                 # self.objImage.enabledScrool()
                 self.objImage.addImage(img)
 
-                img_pre_processing = preprocess.start(imgOriginal, filter=filter, method_edge_detection=filter)
+                img_pre_processing = preprocess.start(imgOriginal, filter=filter, edge_detection=edge_detection)
                 img_crack = crack.detect(img_pre_processing, method=edge_detection)
                 img_crack = convert_cv_to_pil(img_crack)
                 self.objImage.addImage(img_crack)

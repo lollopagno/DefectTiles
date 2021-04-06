@@ -2,9 +2,6 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 
-img_edge = []
-
-
 def histogram(imgs, labels):
     r"""
     Create N histograms
@@ -29,16 +26,15 @@ def histogram(imgs, labels):
     plt.show()
 
 
-def start(img, filter, method_edge_detection):
+def start(img, filter, edge_detection):
     r"""
     Performs pre-processing operations
     :param filter: type of filter to apply
-    :param method_edge_detection: edge detection method (canny, sobel)
+    :param edge_detection: edge detection method (canny, sobel)
     :param img: image to be processed
     :return: pre-processed image
     """
-
-    global img_edge
+    img_edge = np.ones((img.shape[0], img.shape[1]))
 
     # Conversion color from RGB to grayscale
     img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
@@ -56,12 +52,12 @@ def start(img, filter, method_edge_detection):
     # histogram([img, img_filt], ["Grayscale", "Filtered"])
 
     # Edge Detection
-    if method_edge_detection == "Canny":
+    if edge_detection == "Canny":
         # median_value = img_filt.mean()
         # img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
         img_edge = cv.Canny(img_filt, 50, 150)
 
-    elif method_edge_detection == "Sobel":
+    elif edge_detection == "Sobel":
 
         scale = 1
         delta = 0
