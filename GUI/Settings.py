@@ -1,6 +1,5 @@
 from tkinter import Frame, Checkbutton, IntVar, LEFT, X
 
-
 class SettingsDetectionEntry(Frame):
     r"""
     Class Setting Detection Method

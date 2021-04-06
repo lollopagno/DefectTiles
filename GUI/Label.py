@@ -1,6 +1,5 @@
 from tkinter import Frame, Label, TOP, LEFT, X
 
-
 class TitleEntry(Frame):
     r"""
     Class Title Label

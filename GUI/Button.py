@@ -1,7 +1,7 @@
-from tkinter import filedialog, LEFT, RIGHT, X, Frame
+from tkinter import filedialog, LEFT, X, Frame
 from tkinter.ttk import Button, Label
 from PIL import ImageTk, Image
-from GUI import Images, Label
+from GUI import Label
 from Preprocessing import pre_processing as preprocess
 from Defect import crack_defect as crack
 import cv2 as cv
