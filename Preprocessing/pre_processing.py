@@ -66,4 +66,4 @@ def start(img, method="Sobel"):
         raise Exception("Specify the edge detection method: Canny or Sobel")
 
     # TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
-    return img_edge / 255.0
+    return img_edge
