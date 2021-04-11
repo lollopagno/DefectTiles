@@ -6,7 +6,7 @@ from GUI import Label
 from GUI import Button
 from GUI import Settings
 
-SIZE_WINDOW = "600x350"
+SIZE_WINDOW = "750x400"
 ICON = "Resources/Icon/icon.ico"
 TITLE = "Defect tiles"
 

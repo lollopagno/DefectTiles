@@ -10,7 +10,7 @@ def detect(original, img, method="Sobel"):
     img = cv.dilate(img, element, iterations=2)
     img = cv.erode(img, element, iterations=1)
 
-    cv.imshow("After morphologic", img)
+    #cv.imshow("After morphologic", img)
     contours, hierarchy = cv.findContours(img, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
 
     centers = []
