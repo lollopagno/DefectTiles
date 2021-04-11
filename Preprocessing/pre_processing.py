@@ -45,7 +45,7 @@ def start(img, method="Sobel"):
     # Edge Detection
     if method == "Canny":
         median_value = img_filt.mean()
-        #img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
+        # img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
         img_edge = cv.Canny(img_filt, 50, 150)
 
     elif method == "Sobel":
@@ -65,5 +65,4 @@ def start(img, method="Sobel"):
     else:
         raise Exception("Specify the edge detection method: Canny or Sobel")
 
-    # TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
-    return img_edge / 255.0
+    return img_edge
