@@ -16,7 +16,7 @@ method = "Canny"
 img_gray = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 
 # Preprocessing
-img_pre_processing = preprocess.start(img_gray, edge_detection=method)
+img_pre_processing = preprocess.start(img_gray, filter = "Bilateral", edge_detection=method)
 
 # Pinhole defect
 # pinhole.detect(img_pre_processing)
@@ -25,7 +25,7 @@ img_pre_processing = preprocess.start(img_gray, edge_detection=method)
 blob_detect = blob.detect(img, img=img_pre_processing, method=method)
 
 # Crack defect
-crack_detect = crack.detect(img_pre_processing / 255, method=method)
+crack_detect = crack.detect(img, img_pre_processing / 255, method=method)
 
 cv.imshow(f"Edge detection {method}", img_pre_processing)
 cv.imshow("Result Blob", blob_detect)

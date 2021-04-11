@@ -35,8 +35,6 @@ class App(Tk):
         Label.EdgeDetectionEntry(frame)                             # Label edge detection
         settingDetection = Settings.SettingsDetectionEntry(frame)   # Checkbox detection
 
-        #images = Images.ImageEntry(frame)                           # Images
-
         buttons.set_state_checkbox_detection(settingDetection)
         buttons.set_state_checkbox_filter(settingFilter)
 

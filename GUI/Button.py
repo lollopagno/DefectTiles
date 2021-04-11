@@ -4,12 +4,13 @@ from PIL import ImageTk, Image
 from GUI import Label
 from Preprocessing import pre_processing as preprocess
 from Defect import crack_defect as crack
+from Defect import blob_defect as blob
 import cv2 as cv
 import numpy as np
 
 SCALE = 1
-RESIZE_IMAGE = 400
-
+RESIZE_HEIGHT_IMAGE = 400
+RESIZE_WIDTH_IMAGE = 450
 
 def open_file_name():
     r"""
@@ -90,9 +91,12 @@ class ButtonEntry(Frame):
                 img_pre_processing = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
 
                 # Crack Detect
-                img_crack = crack.detect(img_original, img_pre_processing, method=edge_detection)
+                img_crack = crack.detect(img_original.copy(), img_pre_processing, method=edge_detection)
 
-                imgStack = stackImages(SCALE, ([img, img_pre_processing], [img_crack, img_crack]))
+                # Blob Detect
+                img_blob = blob.detect(img_original.copy(), img_pre_processing, method=edge_detection)
+
+                imgStack = stackImages(SCALE, ([img, img_pre_processing], [img_crack, img_blob]))
                 cv.imshow("Result", imgStack)
         except Exception as e:
             print(e)
@@ -119,13 +123,12 @@ def resize_image(img):
     :return: image PIL to be resized
     """
     height, width, _ = img.shape
-    if height > RESIZE_IMAGE:
-        height = RESIZE_IMAGE
-    if width > RESIZE_IMAGE:
-        width = RESIZE_IMAGE
+    if height > RESIZE_HEIGHT_IMAGE:
+        height = RESIZE_HEIGHT_IMAGE
+    if width > RESIZE_HEIGHT_IMAGE:
+        width = RESIZE_WIDTH_IMAGE
 
-    imgResized = cv.resize(img, (height, width))
-    return imgResized
+    return cv.resize(img, (width, height))
 
 
 def stackImages(scale, imgArray):
