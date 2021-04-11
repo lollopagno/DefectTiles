@@ -1,100 +1,39 @@
 import numpy as np
 import cv2 as cv
 
-def detect(img, size_blob = 20, method="Sobel"):
 
-    # kernel = np.ones((3,3), np.uint8)
-    # imgDialation = cv.dilate(img, kernel, iterations=1)
-    # cv.imshow("Dialation", imgDialation)
-
-    height, width = img.shape
-    start = round(size_blob / 2 + 1)
-    result = np.zeros((height, width))
-
+def detect(original, img, method="Sobel"):
     if method == "Sobel":
-        value_found = 0.098
+        _, img = cv.threshold(img, 50, 255, cv.THRESH_BINARY)
 
-    elif method == "Canny":
-        value_found = 1
-    else:
-        raise Exception("Specify the edge detection method: Canny or Sobel")
+    element = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3))
+    img = cv.dilate(img, element, iterations=2)
+    img = cv.erode(img, element, iterations=1)
 
-    for i in range(start, height - start + 1):
-        for j in range(start, width - start + 1):
+    cv.imshow("After morphologic", img)
+    contours, hierarchy = cv.findContours(img, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
 
-            if img[i, j] >= value_found:
-                detect_blob, blob = calculate_neighbors(pixel=[i, j], img=img, value=value_found, neighbors=start)
-                if detect_blob:
-                    # Blob detected
-                    result = blob.copy()
-                    break
-    return result
+    centers = []
+    contours_to_draw = []
+    for cnt in contours:
 
+        area = cv.contourArea(cnt)
 
-def calculate_neighbors(pixel, img, value, neighbors):
-    x, y = pixel
-    b_lenght = 0  # Lenght blob
+        if area < 10:
+            continue
 
-    height, width = img.shape
-    result = np.zeros((height, width))
+        peri = cv.arcLength(cnt, True)
+        approx = cv.approxPolyDP(cnt, 0.05 * peri, True)
+        objCor = len(approx)
+        if objCor > 4:
 
-    for n in range(1, neighbors + 1):
+            contours_to_draw.append(cnt)
+            m = cv.moments(cnt)
+            center = (int(m['m10'] / m['m00']), int(m['m01'] / m['m00']))
+            centers.append(center)
 
-        p1 = img[x - n, y - n]
-        if p1 >= value:
-            result[x - n, y - n] = 1
-            b_lenght += 1
-        else:
-            break
+    for cnt in contours_to_draw:
+        # cv.circle(original, center, 3, (255, 0, 0), -1)
+        cv.drawContours(original, cnt, -1, (0, 0, 255), 3)
 
-        p2 = img[x - n, y]
-        if p2 >= value:
-            result[x - n, y] = 1
-            b_lenght += 1
-        else:
-            break
-
-        p3 = img[x - n, y + n]
-        if p3 >= value:
-            result[x - n, y + n] = 1
-            b_lenght += 1
-        else:
-            break
-
-        p4 = img[x, y - n]
-        if p4 >= value:
-            result[x, y - n] = 1
-            b_lenght += 1
-        else:
-            break
-
-        p5 = img[x, y + n]
-        if p5 >= value:
-            result[x, y + n] = 1
-            b_lenght += 1
-        else:
-            break
-
-        p6 = img[x + n, y - n]
-        if p6 >= value:
-            result[x + n, y - n] = 1
-            b_lenght += 1
-        else:
-            break
-
-        p7 = img[x + n, y]
-        if p7 >= value:
-            result[x + n, y] = 1
-            b_lenght += 1
-        else:
-            break
-
-        p8 = img[x + n, y + n]
-        if p8 >= value:
-            result[x + n, y + n] = 1
-            b_lenght += 1
-        else:
-            break
-
-    print(f"Blob lenght: {b_lenght}")
-    return b_lenght <= neighbors * neighbors, result
+    return original
