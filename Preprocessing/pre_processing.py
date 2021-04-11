@@ -54,6 +54,7 @@ def start(img, filter, edge_detection):
     # Edge Detection
     if edge_detection == "Canny":
         # median_value = img_filt.mean()
+
         # img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
         img_edge = cv.Canny(img_filt, 50, 150)
 
@@ -71,5 +72,7 @@ def start(img, filter, edge_detection):
 
         img_edge = cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
-    # TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
+    else:
+        raise Exception("Specify the edge detection method: Canny or Sobel")
+
     return img_edge
