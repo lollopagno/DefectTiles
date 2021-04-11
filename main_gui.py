@@ -5,7 +5,6 @@ from tkinter import Frame
 from GUI import Label
 from GUI import Button
 from GUI import Settings
-from GUI import Images
 
 SIZE_WINDOW = "600x350"
 ICON = "Resources/Icon/icon.ico"
