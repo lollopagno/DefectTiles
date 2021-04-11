@@ -2,7 +2,6 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 def histogram(imgs, labels):
     r"""
     Create N histograms
@@ -27,28 +26,38 @@ def histogram(imgs, labels):
     plt.show()
 
 
-def start(img, method="Sobel"):
+def start(img, filter, edge_detection):
     r"""
     Performs pre-processing operations
-    :param method: edge detection method (canny, sobel)
+    :param filter: type of filter to apply
+    :param edge_detection: edge detection method (canny, sobel)
     :param img: image to be processed
     :return: pre-processed image
     """
+    img_edge = np.ones((img.shape[0], img.shape[1]))
+
+    # Conversion color from RGB to grayscale
+    img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
 
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
 
-    # Median filter (noise reduction)
-    img_filt = cv.medianBlur(img_norm, 3)
+    # Applying the filter (noise reduction)
+    if filter == "Median":
+        img_filt = cv.medianBlur(img_norm, 3)
+    elif filter == "Gaussian":
+        img_filt = cv.GaussianBlur(img_norm, (3, 3), 0)
+    else:
+        img_filt = cv.bilateralFilter(img_norm, 3, 75, 75)
     # histogram([img, img_filt], ["Grayscale", "Filtered"])
 
     # Edge Detection
-    if method == "Canny":
-        median_value = img_filt.mean()
-        #img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
+    if edge_detection == "Canny":
+        # median_value = img_filt.mean()
+        # img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
         img_edge = cv.Canny(img_filt, 50, 150)
 
-    elif method == "Sobel":
+    elif edge_detection == "Sobel":
 
         scale = 1
         delta = 0
@@ -62,8 +71,5 @@ def start(img, method="Sobel"):
 
         img_edge = cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
-    else:
-        raise Exception("Specify the edge detection method: Canny or Sobel")
-
     # TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
-    return img_edge / 255.0
+    return img_edge
