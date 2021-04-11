@@ -12,6 +12,7 @@ SCALE = 1
 RESIZE_HEIGHT_IMAGE = 400
 RESIZE_WIDTH_IMAGE = 450
 
+
 def open_file_name():
     r"""
     Select the image from a folder
@@ -31,27 +32,31 @@ class ButtonEntry(Frame):
         self.pack(fill=X)
         self.stateCheckBoxFilter = None
         self.stateCheckBoxDetection = None
+        self.path = None
 
         btnUpload = Button(self, text="Upload", command=self.open_img)
         btnUpload.pack(side=LEFT, padx=20, pady=30)
 
-        btnExit = Button(self, text="Exit", command=self.quit)
-        btnExit.pack(side=LEFT, fill=X, padx=5)
+        btnStart = Button(self, text="Start", command=self.start_detect)
+        btnStart.pack(side=LEFT, padx=20)
 
-        self.labelErr = Label.ErrorEntry(self)
+        btnExit = Button(self, text="Exit", command=self.quit)
+        btnExit.pack(side=LEFT, padx=20)
+
+        self.messageLabel = Label.ErrorEntry(self)
 
     def check_state_checkbox(self):
         r"""
          Check the current state of the checkbox filters and edge detection methods.
         :return: filter and edge detection method chosen by the user
         """
-        self.labelErr.disabled()
+        self.messageLabel.disabled()
 
         # Check state check box filter
         median, gaussian, bilateral = self.stateCheckBoxFilter.get_state()
         if (median and gaussian and bilateral) or (median and gaussian) or (median and bilateral) or (
                 gaussian and bilateral) or (not median and not gaussian and not bilateral):
-            self.labelErr.enabled("Specify the filter to apply: median, gaussian or bilateral!", 40)
+            self.messageLabel.enabled("Specify the filter to apply: median, gaussian or bilateral!", 40, "red")
             raise Exception("Error filter!")
         elif median:
             filter = "Median"
@@ -60,30 +65,40 @@ class ButtonEntry(Frame):
         else:
             filter = "Bilateral"
 
-        self.labelErr.disabled()
+        self.messageLabel.disabled()
 
         # Check state check box edge detection method
         sobel, canny = self.stateCheckBoxDetection.get_state()
         if (sobel and canny) or (not sobel and not canny):
-            self.labelErr.enabled("Specify the edge detection method: Canny or Sobel!", 38)
+            self.messageLabel.enabled("Specify the edge detection method: Canny or Sobel!", 38, "red")
             raise Exception("Error edge detection!")
         elif sobel:
             method_edge_detection = "Sobel"
         else:
             method_edge_detection = "Canny"
 
-        self.labelErr.disabled()
+        self.messageLabel.disabled()
         return filter, method_edge_detection
 
     def open_img(self):
         r"""
         Open the image after press buttton upload
         """
+        self.path = open_file_name()
+        if self.path != "":
+            self.messageLabel.disabled()
+            self.messageLabel.enabled("Image loaded successfully!", 20, "blue")
+
+    def start_detect(self):
+        r"""
+        Start detect
+        """
         try:
             filter, edge_detection = self.check_state_checkbox()
-            path = open_file_name()
-            if path != "":
-                img = cv.imread(path)
+            if self.path is not None:
+                self.messageLabel.disabled()
+
+                img = cv.imread(self.path)
                 img_original = img.copy()
                 img = resize_image(img)
 
