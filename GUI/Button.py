@@ -90,7 +90,7 @@ class ButtonEntry(Frame):
                 img_pre_processing = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
 
                 # Crack Detect
-                img_crack = crack.detect(img_pre_processing, method=edge_detection)
+                img_crack = crack.detect(img_original, img_pre_processing, method=edge_detection)
 
                 imgStack = stackImages(SCALE, ([img, img_pre_processing], [img_crack, img_crack]))
                 cv.imshow("Result", imgStack)
