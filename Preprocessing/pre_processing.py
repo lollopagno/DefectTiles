@@ -72,4 +72,4 @@ def start(img, filter, edge_detection):
         img_edge = cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
     # TODO aggiungere conteggio dei pixel neri per essere confrontato con l'immagine di test
-    return img_edge / 255.0
+    return img_edge
