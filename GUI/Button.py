@@ -5,6 +5,10 @@ from GUI import Label
 from Preprocessing import pre_processing as preprocess
 from Defect import crack_defect as crack
 import cv2 as cv
+import numpy as np
+
+SCALE = 1
+RESIZE_IMAGE = 400
 
 
 def open_file_name():
@@ -20,12 +24,12 @@ class ButtonEntry(Frame):
     r"""
     Class Button entry
     """
+
     def __init__(self, parent):
         super().__init__(parent)
         self.pack(fill=X)
         self.stateCheckBoxFilter = None
         self.stateCheckBoxDetection = None
-        self.objImage = None
 
         btnUpload = Button(self, text="Upload", command=self.open_img)
         btnUpload.pack(side=LEFT, padx=20, pady=30)
@@ -75,25 +79,21 @@ class ButtonEntry(Frame):
         Open the image after press buttton upload
         """
         try:
-
             filter, edge_detection = self.check_state_checkbox()
             path = open_file_name()
             if path != "":
                 img = cv.imread(path)
-                imgOriginal = img.copy()
+                img_original = img.copy()
                 img = resize_image(img)
 
-                # self.objImage.enabledScrool()
-                self.objImage.add_image(img)
-
                 # Pre processing
-                img_pre_processing = preprocess.start(imgOriginal, filter=filter, edge_detection=edge_detection)
+                img_pre_processing = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
 
                 # Crack Detect
                 img_crack = crack.detect(img_pre_processing, method=edge_detection)
-                img_crack = convert_cv_to_pil(img_crack)
-                self.objImage.add_image(img_crack)
 
+                imgStack = stackImages(SCALE, ([img, img_pre_processing], [img_crack, img_crack]))
+                cv.imshow("Result", imgStack)
         except Exception as e:
             print(e)
 
@@ -111,37 +111,82 @@ class ButtonEntry(Frame):
         """
         self.stateCheckBoxFilter = state
 
-    def set_obj_images(self, objImage):
-        r"""
-        Saves the instance of the object
-        :param objImage: instance of the object of images
-        """
-        self.objImage = objImage
-
 
 def resize_image(img):
     r"""
-    Resizesthe image
+    Resizes the image
     :param img: image to resize
     :return: image PIL to be resized
     """
     height, width, _ = img.shape
-    if height > 400:
-        height = 400
-    if width > 400:
-        width = 400
+    if height > RESIZE_IMAGE:
+        height = RESIZE_IMAGE
+    if width > RESIZE_IMAGE:
+        width = RESIZE_IMAGE
 
     imgResized = cv.resize(img, (height, width))
-    return convert_cv_to_pil(imgResized)
+    return imgResized
 
 
-def convert_cv_to_pil(img):
+def stackImages(scale, imgArray):
     r"""
-    Convert the image from open-cv to PIL, resize image
-    :param img: image in open-cv to convert
-    :return: image PIL to be converted
+    Stack the images based on the number of them by rows and columns.
+    Resize the images.
+    :param scale: scale factor
+    :param imgArray: array of images
+    :return: array of images to show
     """
-    img = cv.resize(img, (200, 200))
-    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-    img = Image.fromarray(img)
-    return ImageTk.PhotoImage(img)
+    rows = len(imgArray)
+    cols = len(imgArray[0])
+
+    rowsAvailable = isinstance(imgArray[0], list)
+
+    width = imgArray[0][0].shape[1]
+    height = imgArray[0][0].shape[0]
+
+    if rowsAvailable:
+        for x in range(0, rows):
+            for y in range(0, cols):
+
+                if imgArray[x][y].shape[:2] == imgArray[0][0].shape[:2]:
+                    imgArray[x][y] = cv.resize(imgArray[x][y], (0, 0), None, scale, scale)
+                else:
+                    imgArray[x][y] = cv.resize(imgArray[x][y], (imgArray[0][0].shape[1], imgArray[0][0].shape[0]),
+                                               None, scale, scale)
+
+                if len(imgArray[x][y].shape) == 2:
+                    imgArray[x][y] = cv.cvtColor(imgArray[x][y], cv.COLOR_GRAY2BGR)
+
+        imageBlank = np.zeros((height, width, 3), np.uint8)
+        hor = [imageBlank] * rows
+
+        for x in range(0, rows):
+            hor[x] = np.hstack(imgArray[x])
+        ver = np.vstack(hor)
+
+    else:
+        for x in range(0, rows):
+
+            if imgArray[x].shape[:2] == imgArray[0].shape[:2]:
+                imgArray[x] = cv.resize(imgArray[x], (0, 0), None, scale, scale)
+            else:
+                imgArray[x] = cv.resize(imgArray[x], (imgArray[0].shape[1], imgArray[0].shape[0]), None, scale, scale)
+
+            if len(imgArray[x].shape) == 2:
+                imgArray[x] = cv.cvtColor(imgArray[x], cv.COLOR_GRAY2BGR)
+
+        hor = np.hstack(imgArray)
+        ver = hor
+
+    return ver
+
+# def convert_cv_to_pil(img):
+#     r"""
+#     Convert the image from open-cv to PIL, resize image
+#     :param img: image in open-cv to convert
+#     :return: image PIL to be converted
+#     """
+#     img = cv.resize(img, (200, 200))
+#     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+#     img = Image.fromarray(img)
+#     return ImageTk.PhotoImage(img)
