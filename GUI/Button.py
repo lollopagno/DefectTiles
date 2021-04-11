@@ -84,8 +84,9 @@ class ButtonEntry(Frame):
         r"""
         Open the image after press buttton upload
         """
-        self.path = open_file_name()
-        if self.path != "":
+        path_img = open_file_name()
+        if path_img != "":
+            self.path = path_img
             self.messageLabel.disabled()
             self.messageLabel.enabled("Image loaded successfully!", 20, "blue")
 
@@ -100,16 +101,19 @@ class ButtonEntry(Frame):
 
                 img = cv.imread(self.path)
                 img_original = img.copy()
-                img = resize_image(img)
+                img = draw_description(resize_image(img), "Original image")
 
                 # Pre processing
-                img_pre_processing = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
+                img_pre_processing = draw_description(
+                    preprocess.start(img_original, filter=filter, edge_detection=edge_detection), "Pre processing")
 
                 # Crack Detect
-                img_crack = crack.detect(img_original.copy(), img_pre_processing, method=edge_detection)
+                img_crack = draw_description(
+                    crack.detect(img_original.copy(), img_pre_processing, method=edge_detection), "Crack detect")
 
                 # Blob Detect
-                img_blob = blob.detect(img_original.copy(), img_pre_processing, method=edge_detection)
+                img_blob = draw_description(blob.detect(img_original.copy(), img_pre_processing, method=edge_detection),
+                                            "Blob detect")
 
                 imgStack = stackImages(SCALE, ([img, img_pre_processing], [img_crack, img_blob]))
                 cv.imshow("Result", imgStack)
@@ -144,6 +148,25 @@ def resize_image(img):
         width = RESIZE_WIDTH_IMAGE
 
     return cv.resize(img, (width, height))
+
+
+def draw_description(img, text):
+    r"""
+    Draw description image
+    :param text: image description
+    :param img: img in which to insert the descrition
+    :return: img with description
+    """
+    bottom = int(0.08 * img.shape[0])
+    img = cv.copyMakeBorder(img, 0, bottom, 0, 0, cv.BORDER_CONSTANT, None, (255, 255, 255))
+
+    try:
+        height, _, _ = img.shape
+    except:
+        height, _ = img.shape
+
+    cv.putText(img, text, (0, height - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+    return img
 
 
 def stackImages(scale, imgArray):
