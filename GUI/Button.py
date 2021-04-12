@@ -30,8 +30,10 @@ class ButtonEntry(Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.pack(fill=X)
+
         self.stateCheckBoxFilter = None
         self.stateCheckBoxDetection = None
+
         self.path = None
 
         btnUpload = Button(self, text="Upload", command=self.open_img)
@@ -78,6 +80,14 @@ class ButtonEntry(Frame):
             method_edge_detection = "Canny"
 
         self.messageLabel.disabled()
+
+        # Check if image is loaded
+        if self.path is None:
+            self.messageLabel.enabled("Upload an image!", 12, "red")
+            raise Exception("Error upload image!")
+
+        self.messageLabel.disabled()
+
         return filter, method_edge_detection
 
     def open_img(self):
@@ -116,7 +126,9 @@ class ButtonEntry(Frame):
                                             "Blob detect")
 
                 imgStack = stackImages(SCALE, ([img, img_pre_processing], [img_crack, img_blob]))
+
                 cv.imshow("Result", imgStack)
+
         except Exception as e:
             print(e)
 
