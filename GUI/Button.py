@@ -12,6 +12,7 @@ SCALE = 1
 RESIZE_HEIGHT_IMAGE = 400
 RESIZE_WIDTH_IMAGE = 450
 
+
 def open_file_name():
     r"""
     Select the image from a folder
@@ -29,29 +30,35 @@ class ButtonEntry(Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.pack(fill=X)
+
         self.stateCheckBoxFilter = None
         self.stateCheckBoxDetection = None
+
+        self.path = None
 
         btnUpload = Button(self, text="Upload", command=self.open_img)
         btnUpload.pack(side=LEFT, padx=20, pady=30)
 
-        btnExit = Button(self, text="Exit", command=self.quit)
-        btnExit.pack(side=LEFT, fill=X, padx=5)
+        btnStart = Button(self, text="Start", command=self.start_detect)
+        btnStart.pack(side=LEFT, padx=20)
 
-        self.labelErr = Label.ErrorEntry(self)
+        btnExit = Button(self, text="Exit", command=self.quit)
+        btnExit.pack(side=LEFT, padx=20)
+
+        self.messageLabel = Label.ErrorEntry(self)
 
     def check_state_checkbox(self):
         r"""
          Check the current state of the checkbox filters and edge detection methods.
         :return: filter and edge detection method chosen by the user
         """
-        self.labelErr.disabled()
+        self.messageLabel.disabled()
 
         # Check state check box filter
         median, gaussian, bilateral = self.stateCheckBoxFilter.get_state()
         if (median and gaussian and bilateral) or (median and gaussian) or (median and bilateral) or (
                 gaussian and bilateral) or (not median and not gaussian and not bilateral):
-            self.labelErr.enabled("Specify the filter to apply: median, gaussian or bilateral!", 40)
+            self.messageLabel.enabled("Specify the filter to apply: median, gaussian or bilateral!", 40, "red")
             raise Exception("Error filter!")
         elif median:
             filter = "Median"
@@ -60,44 +67,68 @@ class ButtonEntry(Frame):
         else:
             filter = "Bilateral"
 
-        self.labelErr.disabled()
+        self.messageLabel.disabled()
 
         # Check state check box edge detection method
         sobel, canny = self.stateCheckBoxDetection.get_state()
         if (sobel and canny) or (not sobel and not canny):
-            self.labelErr.enabled("Specify the edge detection method: Canny or Sobel!", 38)
+            self.messageLabel.enabled("Specify the edge detection method: Canny or Sobel!", 38, "red")
             raise Exception("Error edge detection!")
         elif sobel:
             method_edge_detection = "Sobel"
         else:
             method_edge_detection = "Canny"
 
-        self.labelErr.disabled()
+        self.messageLabel.disabled()
+
+        # Check if image is loaded
+        if self.path is None:
+            self.messageLabel.enabled("Upload an image!", 12, "red")
+            raise Exception("Error upload image!")
+
+        self.messageLabel.disabled()
+
         return filter, method_edge_detection
 
     def open_img(self):
         r"""
         Open the image after press buttton upload
         """
+        path_img = open_file_name()
+        if path_img != "":
+            self.path = path_img
+            self.messageLabel.disabled()
+            self.messageLabel.enabled("Image loaded successfully!", 20, "blue")
+
+    def start_detect(self):
+        r"""
+        Start detect
+        """
         try:
             filter, edge_detection = self.check_state_checkbox()
-            path = open_file_name()
-            if path != "":
-                img = cv.imread(path)
+            if self.path is not None:
+                self.messageLabel.disabled()
+
+                img = cv.imread(self.path)
                 img_original = img.copy()
-                img = resize_image(img)
+                img = draw_description(resize_image(img), "Original image")
 
                 # Pre processing
-                img_pre_processing = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
+                img_pre_processing = draw_description(
+                    preprocess.start(img_original, filter=filter, edge_detection=edge_detection), "Pre processing")
 
                 # Crack Detect
-                img_crack = crack.detect(img_original.copy(), img_pre_processing, method=edge_detection)
+                img_crack = draw_description(
+                    crack.detect(img_original.copy(), img_pre_processing, method=edge_detection), "Crack detect")
 
                 # Blob Detect
-                img_blob = blob.detect(img_original.copy(), img_pre_processing, method=edge_detection)
+                img_blob = draw_description(blob.detect(img_original.copy(), img_pre_processing, method=edge_detection),
+                                            "Blob detect")
 
                 imgStack = stackImages(SCALE, ([img, img_pre_processing], [img_crack, img_blob]))
+
                 cv.imshow("Result", imgStack)
+
         except Exception as e:
             print(e)
 
@@ -129,6 +160,25 @@ def resize_image(img):
         width = RESIZE_WIDTH_IMAGE
 
     return cv.resize(img, (width, height))
+
+
+def draw_description(img, text):
+    r"""
+    Draw description image
+    :param text: image description
+    :param img: img in which to insert the descrition
+    :return: img with description
+    """
+    bottom = int(0.08 * img.shape[0])
+    img = cv.copyMakeBorder(img, 0, bottom, 0, 0, cv.BORDER_CONSTANT, None, (255, 255, 255))
+
+    try:
+        height, _, _ = img.shape
+    except:
+        height, _ = img.shape
+
+    cv.putText(img, text, (0, height - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+    return img
 
 
 def stackImages(scale, imgArray):
