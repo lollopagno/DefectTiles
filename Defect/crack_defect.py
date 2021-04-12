@@ -4,6 +4,7 @@ import scipy.ndimage
 import sys
 from scipy.ndimage.measurements import label
 
+
 # TODO cercare di far filtrare i crack per:
 #  1- forma (linea, scartare i cerchi);
 #  2- range delle componenti connesse;
@@ -19,7 +20,7 @@ def detect(original, img, method="Sobel"):
     """
 
     height, width = img.shape
-    cracks = connected_components(img, method)
+    cracks = connected_components(img / 255, method)
     result = np.zeros((height, width))
 
     if len(cracks) != 0:
@@ -28,12 +29,12 @@ def detect(original, img, method="Sobel"):
                 x, y = crack.pop()
                 result[x, y] = 1
 
-        result = result.astype('uint8')
-        contours, hierarchy = cv.findContours(result, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+        crack_detect = result.astype('uint8')  # TODO check this if is correct!
+        contours, hierarchy = cv.findContours(crack_detect, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         for cnt in contours:
             cv.drawContours(original, cnt, -1, (255, 255, 255), 2)
 
-    return original
+    return original, (result + 1) * 255 / 2  # Convert into range[0,255]
 
 
 def connected_components(img, method):
