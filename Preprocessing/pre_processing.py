@@ -29,12 +29,11 @@ def histogram(imgs, labels):
 def start(img, filter, edge_detection):
     r"""
     Performs pre-processing operations
+    :param img: image to be processed
     :param filter: type of filter to apply
     :param edge_detection: edge detection method (canny, sobel)
-    :param img: image to be processed
-    :return: pre-processed image
+    :return: pre-processed image, normalized image (normalization + filtering)
     """
-    img_edge = np.ones((img.shape[0], img.shape[1]))
 
     # Conversion color from RGB to grayscale
     img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
@@ -75,4 +74,4 @@ def start(img, filter, edge_detection):
     else:
         raise Exception("Specify the edge detection method: Canny or Sobel")
 
-    return img_edge
+    return img_edge, img_filt
