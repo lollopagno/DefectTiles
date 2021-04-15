@@ -1,8 +1,8 @@
 import numpy as np
 import cv2 as cv
 
-# TODO cercare di far filtrare i crack per:
-#  1- entropia per individuare i crack neri da quelli bianchi
+# TODO cercare di far filtrare i Crack per:
+#  1- entropia per individuare i Crack neri da quelli bianchi
 #  2- componenti molto piccole
 
 RED = np.array([0, 0, 255])
