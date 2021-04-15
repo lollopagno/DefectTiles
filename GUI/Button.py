@@ -113,20 +113,18 @@ class ButtonEntry(Frame):
                 img_original = img.copy()
 
                 # Pre processing
-                img_pre_processing = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
+                binary_edge, img_filtered = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
 
                 # Crack Detect
-                img_crack, next_img = crack.detect(img_original.copy(), img_pre_processing, method=edge_detection)
-
-                next_img = cv.subtract(img_pre_processing, next_img, dtype=cv.CV_8U)
-                cv.imshow("Subtract", next_img)
+                img_crack_original, img_subtract_cracks = crack.detect(img_original=img_original.copy(),
+                                                                       img_edge=binary_edge, method=edge_detection)
 
                 # Blob Detect
-                img_blob = blob.detect(img_original.copy(), next_img, method=edge_detection)
+                img_blob = blob.detect(img_original.copy(), img_subtract_cracks, method=edge_detection)
 
                 imgStack = stackImages(SCALE, ([draw_description(resize_image(img), "Original image"),
-                                                draw_description(img_pre_processing, "Pre processing")],
-                                               [draw_description(img_crack, "Crack detect"),
+                                                draw_description(binary_edge, "Pre processing")],
+                                               [draw_description(img_crack_original, "Crack detect"),
                                                 draw_description(img_blob, "Blob detect")]))
 
                 cv.imshow("Result", imgStack)
