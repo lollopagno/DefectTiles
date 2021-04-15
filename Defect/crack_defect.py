@@ -1,40 +1,52 @@
 import numpy as np
 import cv2 as cv
-import scipy.ndimage
-import sys
-from scipy.ndimage.measurements import label
-
 
 # TODO cercare di far filtrare i crack per:
-#  1- forma (linea, scartare i cerchi);
-#  2- range delle componenti connesse;
-#  3- energia.
+#  1- entropia per individuare i crack neri da quelli bianchi
+#  2- componenti molto piccole
 
-def detect(original, img, method="Sobel"):
+RED = np.array([0, 0, 255])
+WHITE = np.array([255, 255, 255])
+
+
+def detect(img_original, img_edge, method):
     r"""
     Detects cracks in the image
-    :param original: original image in which to draw the defects
+    :param img_original: original image in which to draw the defects
+    :param img_edge: binary image that contains the edges
     :param method: edge detection method (canny, sobel)
-    :param img: image in which to detect cracks
-    :return: binary image with cracks detected
+    :return: original image with cracks detected, binary image with cracks detected
     """
 
-    height, width = img.shape
-    cracks = connected_components(img / 255, method)
-    result = np.zeros((height, width))
+    cracks = connected_components(img_edge / 255, method)
+    cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
     if len(cracks) != 0:
         for crack in cracks:
             for i in range(0, len(crack)):
                 x, y = crack.pop()
-                result[x, y] = 1
+                cracks_detect[x, y] = 1
 
-        crack_detect = result.astype('uint8')  # TODO check this if is correct!
-        contours, hierarchy = cv.findContours(crack_detect, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+        contours, hierarchy = cv.findContours(cracks_detect.astype('uint8'), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+        cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
         for cnt in contours:
-            cv.drawContours(original, cnt, -1, (255, 255, 255), 2)
 
-    return original, (result + 1) * 255 / 2  # Convert into range[0,255]
+            area = cv.contourArea(cnt)
+            if area < 2.0:
+                continue
+
+            peri = cv.arcLength(cnt, True)
+            approx = cv.approxPolyDP(cnt, 0.05 * peri, True)
+            objCor = len(approx)
+            if objCor < 4:
+                cv.drawContours(cracks_detect, cnt, -1, (255, 255, 255), 1)
+                cv.drawContours(img_original, cnt, -1, (0, 255, 0), 3)
+
+        subtract = cv.subtract(img_edge, cracks_detect, dtype=cv.CV_8U)
+    else:
+        subtract = np.zeros(img_edge.shape[:2], dtype=np.uint8)
+
+    return img_original, subtract
 
 
 def connected_components(img, method):
