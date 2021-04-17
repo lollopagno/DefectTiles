@@ -2,6 +2,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def histogram(imgs, labels):
     r"""
     Create N histograms
@@ -26,17 +27,17 @@ def histogram(imgs, labels):
     plt.show()
 
 
-def start(img, filter, edge_detection):
+def start(img_original, filter, edge_detection):
     r"""
     Performs pre-processing operations
-    :param img: image to be processed
+    :param img_original: image to be processed
     :param filter: type of filter to apply
     :param edge_detection: edge detection method (canny, sobel)
-    :return: pre-processed image, normalized image (normalization + filtering)
+    :return: pre-processed image
     """
 
     # Conversion color from RGB to grayscale
-    img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
+    img = cv.cvtColor(img_original, cv.COLOR_RGB2GRAY)
 
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
@@ -74,4 +75,32 @@ def start(img, filter, edge_detection):
     else:
         raise Exception("Specify the edge detection method: Canny or Sobel")
 
-    return img_edge, img_filt
+    img_edge = improved_image(img_original, img_edge)
+
+    return img_edge
+
+
+def improved_image(img, img_edge):
+    r"""
+    Performs a threshold operation by deleting components specified by threshold values
+    :param img: original image
+    :param img_edge: binary image that contains the edges
+    :return: binary image in which to find for defects
+    """
+
+    imgHSV = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+
+    h_min, s_min, v_min = 0, 0, 107
+    h_max, s_max, v_max = 0, 0, 255
+
+    lower = np.array([h_min, s_min, v_min])
+    upper = np.array([h_max, s_max, v_max])
+
+    mask = cv.inRange(imgHSV, lower, upper)
+    img_result = cv.bitwise_and(img, img, mask=mask)
+    img_result = cv.dilate(img_result, (3, 3), iterations=3)
+    img_result = cv.cvtColor(img_result, cv.COLOR_BGR2GRAY)
+
+    subtract = cv.subtract(img_edge, img_result)
+
+    return subtract
