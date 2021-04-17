@@ -113,7 +113,7 @@ class ButtonEntry(Frame):
                 img_original = img.copy()
 
                 # Pre processing
-                binary_edge, img_filtered = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
+                binary_edge = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
 
                 # Crack Detect
                 img_crack_original, img_subtract_cracks = crack.detect(img_original=img_original.copy(),
