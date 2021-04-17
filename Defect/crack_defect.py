@@ -9,7 +9,7 @@ RED = np.array([0, 0, 255])
 WHITE = np.array([255, 255, 255])
 
 
-def detect(img_original, img_edge, method):
+def detect(img_original, img_edge, method="Sobel"):
     r"""
     Detects cracks in the image
     :param img_original: original image in which to draw the defects
@@ -38,7 +38,7 @@ def detect(img_original, img_edge, method):
             peri = cv.arcLength(cnt, True)
             approx = cv.approxPolyDP(cnt, 0.05 * peri, True)
             objCor = len(approx)
-            if objCor < 4:
+            if objCor < 3:
                 cv.drawContours(cracks_detect, cnt, -1, (255, 255, 255), 1)
                 cv.drawContours(img_original, cnt, -1, (0, 255, 0), 3)
 
