@@ -1,6 +1,5 @@
 from tkinter import filedialog, LEFT, X, Frame
 from tkinter.ttk import Button, Label
-from PIL import ImageTk, Image
 from GUI import Label
 from Preprocessing import pre_processing as preprocess
 from Defect import crack_defect as crack
@@ -154,10 +153,7 @@ def resize_image(img):
     :return: image PIL to be resized
     """
 
-    try:
-        height, width, _ = img.shape
-    except:
-        height, width = img.shape
+    height, width = get_shape(img)
 
     if height > RESIZE_HEIGHT_IMAGE:
         height = RESIZE_HEIGHT_IMAGE
@@ -178,11 +174,7 @@ def draw_description(img, text):
     bottom = int(0.08 * img.shape[0])
     img = cv.copyMakeBorder(img, 0, bottom, 0, 0, cv.BORDER_CONSTANT, None, (255, 255, 255))
 
-    try:
-        height, _, _ = img.shape
-    except:
-        height, _ = img.shape
-
+    height, _ = get_shape(img)
     cv.putText(img, text, (0, height - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
     return img
 
@@ -239,13 +231,17 @@ def stackImages(scale, imgArray):
 
     return ver
 
-# def convert_cv_to_pil(img):
-#     r"""
-#     Convert the image from open-cv to PIL, resize image
-#     :param img: image in open-cv to convert
-#     :return: image PIL to be converted
-#     """
-#     img = cv.resize(img, (200, 200))
-#     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-#     img = Image.fromarray(img)
-#     return ImageTk.PhotoImage(img)
+
+def get_shape(img):
+    r"""
+    Gets the shape of the image based on the number of channels
+    :param img: img to get shape
+    :return: height, width of the image
+    """
+
+    try:
+        height, width, _ = img.shape
+    except:
+        height, width = img.shape
+
+    return height, width
