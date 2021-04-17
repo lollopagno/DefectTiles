@@ -123,9 +123,9 @@ class ButtonEntry(Frame):
                 img_blob = blob.detect(img_original.copy(), img_subtract_cracks, method=edge_detection)
 
                 imgStack = stackImages(SCALE, ([draw_description(resize_image(img), "Original image"),
-                                                draw_description(binary_edge, "Pre processing")],
-                                               [draw_description(img_crack_original, "Crack detect"),
-                                                draw_description(img_blob, "Blob detect")]))
+                                                draw_description(resize_image(binary_edge), "Pre processing")],
+                                               [draw_description(resize_image(img_crack_original), "Crack detect"),
+                                                draw_description(resize_image(img_blob), "Blob detect")]))
 
                 cv.imshow("Result", imgStack)
 
@@ -153,7 +153,12 @@ def resize_image(img):
     :param img: image to resize
     :return: image PIL to be resized
     """
-    height, width, _ = img.shape
+
+    try:
+        height, width, _ = img.shape
+    except:
+        height, width = img.shape
+
     if height > RESIZE_HEIGHT_IMAGE:
         height = RESIZE_HEIGHT_IMAGE
     if width > RESIZE_HEIGHT_IMAGE:
@@ -169,6 +174,7 @@ def draw_description(img, text):
     :param img: img in which to insert the descrition
     :return: img with description
     """
+
     bottom = int(0.08 * img.shape[0])
     img = cv.copyMakeBorder(img, 0, bottom, 0, 0, cv.BORDER_CONSTANT, None, (255, 255, 255))
 
