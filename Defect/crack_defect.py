@@ -1,8 +1,10 @@
 import numpy as np
 import cv2 as cv
+import math
 
 RED = np.array([0, 0, 255])
 WHITE = np.array([255, 255, 255])
+MIN_DISTANCE_POLIGON = 7
 
 
 def detect(img_original, img_edge, method="Sobel"):
@@ -23,20 +25,30 @@ def detect(img_original, img_edge, method="Sobel"):
                 x, y = crack.pop()
                 cracks_detect[x, y] = 1
 
+        # Find for the contours of the identified cracks
         contours, hierarchy = cv.findContours(cracks_detect.astype('uint8'), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
         for cnt in contours:
 
-            area = cv.contourArea(cnt)
-            if area < 2.0:
-                continue
+            all_distances = 0  # Total distance of all points of the polygon from the center
+            all_weights = 0  # Total weight of all points of the polygon from the center
 
-            peri = cv.arcLength(cnt, True)
-            approx = cv.approxPolyDP(cnt, 0.05 * peri, True)
-            objCor = len(approx)
-            if objCor < 3:
+            # Calculate the center
+            m = cv.moments(cnt)
+            center = (int(m['m10'] / m['m00']), int(m['m01'] / m['m00']))
+
+            for item in cnt:
+                # Calculate the weighted distance
+                distance = math.sqrt((math.pow(center[0] - item[0][0], 2) + math.pow(center[1] - item[0][1], 2)))
+                weight = 1 if distance < MIN_DISTANCE_POLIGON else 2
+                all_weights += weight
+                all_distances += distance * weight
+
+            all_distances = round(all_distances / all_weights)  # Weighted distance of the polygon
+
+            if all_distances >= MIN_DISTANCE_POLIGON:
                 cv.drawContours(cracks_detect, cnt, -1, (255, 255, 255), 1)
-                cv.drawContours(img_original, cnt, -1, (0, 255, 0), 3)
+                cv.drawContours(img_original, cnt, -1, (0, 255, 0), 2)
 
         subtract = cv.subtract(img_edge, cracks_detect, dtype=cv.CV_8U)
     else:
