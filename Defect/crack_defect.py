@@ -1,39 +1,60 @@
 import numpy as np
 import cv2 as cv
-import scipy.ndimage
-import sys
-from scipy.ndimage.measurements import label
+import math
 
-# TODO cercare di far filtrare i crack per:
-#  1- forma (linea, scartare i cerchi);
-#  2- range delle componenti connesse;
-#  3- energia.
+RED = np.array([0, 0, 255])
+WHITE = np.array([255, 255, 255])
+MIN_DISTANCE_POLIGON = 7
 
-def detect(original, img, method="Sobel"):
+
+def detect(img_original, img_edge, method="Sobel"):
     r"""
     Detects cracks in the image
-    :param original: original image in which to draw the defects
+    :param img_original: original image in which to draw the defects
+    :param img_edge: binary image that contains the edges
     :param method: edge detection method (canny, sobel)
-    :param img: image in which to detect cracks
-    :return: binary image with cracks detected
+    :return: original image with cracks detected, binary image with cracks detected
     """
 
-    height, width = img.shape
-    cracks = connected_components(img, method)
-    result = np.zeros((height, width))
+    cracks = connected_components(img_edge / 255, method)
+    cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
     if len(cracks) != 0:
         for crack in cracks:
             for i in range(0, len(crack)):
                 x, y = crack.pop()
-                result[x, y] = 1
+                cracks_detect[x, y] = 1
 
-        result = result.astype('uint8')
-        contours, hierarchy = cv.findContours(result, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+        # Find for the contours of the identified cracks
+        contours, hierarchy = cv.findContours(cracks_detect.astype('uint8'), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+        cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
         for cnt in contours:
-            cv.drawContours(original, cnt, -1, (255, 255, 255), 2)
 
-    return original
+            all_distances = 0  # Total distance of all points of the polygon from the center
+            all_weights = 0  # Total weight of all points of the polygon from the center
+
+            # Calculate the center
+            m = cv.moments(cnt)
+            center = (int(m['m10'] / m['m00']), int(m['m01'] / m['m00']))
+
+            for item in cnt:
+                # Calculate the weighted distance
+                distance = math.sqrt((math.pow(center[0] - item[0][0], 2) + math.pow(center[1] - item[0][1], 2)))
+                weight = 1 if distance < MIN_DISTANCE_POLIGON else 2
+                all_weights += weight
+                all_distances += distance * weight
+
+            all_distances = round(all_distances / all_weights)  # Weighted distance of the polygon
+
+            if all_distances >= MIN_DISTANCE_POLIGON:
+                cv.drawContours(cracks_detect, cnt, -1, (255, 255, 255), 1)
+                cv.drawContours(img_original, cnt, -1, (0, 255, 0), 2)
+
+        subtract = cv.subtract(img_edge, cracks_detect, dtype=cv.CV_8U)
+    else:
+        subtract = np.zeros(img_edge.shape[:2], dtype=np.uint8)
+
+    return img_original, subtract
 
 
 def connected_components(img, method):

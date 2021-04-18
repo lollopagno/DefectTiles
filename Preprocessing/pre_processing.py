@@ -2,6 +2,7 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import numpy as np
 
+
 def histogram(imgs, labels):
     r"""
     Create N histograms
@@ -26,36 +27,33 @@ def histogram(imgs, labels):
     plt.show()
 
 
-def start(img, filter, edge_detection):
+def start(img_original, filter, edge_detection):
     r"""
     Performs pre-processing operations
+    :param img_original: image to be processed
     :param filter: type of filter to apply
     :param edge_detection: edge detection method (canny, sobel)
-    :param img: image to be processed
     :return: pre-processed image
     """
-    img_edge = np.ones((img.shape[0], img.shape[1]))
 
     # Conversion color from RGB to grayscale
-    img = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
+    img = cv.cvtColor(img_original, cv.COLOR_BGR2GRAY)
 
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
+    img_blur = cv.blur(img_norm, (3, 3))
 
     # Applying the filter (noise reduction)
     if filter == "Median":
-        img_filt = cv.medianBlur(img_norm, 3)
+        img_filt = cv.medianBlur(img_blur, 3)
     elif filter == "Gaussian":
-        img_filt = cv.GaussianBlur(img_norm, (3, 3), 0)
+        img_filt = cv.GaussianBlur(img_blur, (3, 3), 0)
     else:
-        img_filt = cv.bilateralFilter(img_norm, 3, 75, 75)
+        img_filt = cv.bilateralFilter(img_blur, 3, 75, 75)
     # histogram([img, img_filt], ["Grayscale", "Filtered"])
 
     # Edge Detection
     if edge_detection == "Canny":
-        # median_value = img_filt.mean()
-
-        # img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
         img_edge = cv.Canny(img_filt, 50, 150)
 
     elif edge_detection == "Sobel":
@@ -75,4 +73,25 @@ def start(img, filter, edge_detection):
     else:
         raise Exception("Specify the edge detection method: Canny or Sobel")
 
-    return img_edge
+    kernel = np.ones((5, 5), np.uint8)
+    closing = cv.morphologyEx(img_edge, cv.MORPH_CLOSE, kernel)
+
+    result_edge = thresholding_image(img_filt, closing)
+    return result_edge
+
+
+def thresholding_image(img, img_edge):
+    r"""
+    Apply binarization of otsu followed by morphological and bit operations
+    :param img: original image
+    :param img_edge: binary image that contains the edges
+    :return: binary image in which to find for defects
+    """
+
+    _, otsu = cv.threshold(img, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    otsu_not = cv.bitwise_not(otsu)
+    img_and = cv.bitwise_and(otsu_not, img_edge)
+    kernel = np.ones((7, 7), np.uint8)
+    img_closing = cv.morphologyEx(img_and, cv.MORPH_CLOSE, kernel)
+
+    return img_closing

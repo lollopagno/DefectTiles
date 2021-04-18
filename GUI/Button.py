@@ -1,6 +1,5 @@
 from tkinter import filedialog, LEFT, X, Frame
 from tkinter.ttk import Button, Label
-from PIL import ImageTk, Image
 from GUI import Label
 from Preprocessing import pre_processing as preprocess
 from Defect import crack_defect as crack
@@ -111,21 +110,21 @@ class ButtonEntry(Frame):
 
                 img = cv.imread(self.path)
                 img_original = img.copy()
-                img = draw_description(resize_image(img), "Original image")
 
                 # Pre processing
-                img_pre_processing = draw_description(
-                    preprocess.start(img_original, filter=filter, edge_detection=edge_detection), "Pre processing")
+                binary_edge = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
 
                 # Crack Detect
-                img_crack = draw_description(
-                    crack.detect(img_original.copy(), img_pre_processing, method=edge_detection), "Crack detect")
+                img_crack_original, img_subtract_cracks = crack.detect(img_original=img_original.copy(),
+                                                                       img_edge=binary_edge, method=edge_detection)
 
                 # Blob Detect
-                img_blob = draw_description(blob.detect(img_original.copy(), img_pre_processing, method=edge_detection),
-                                            "Blob detect")
+                img_blob = blob.detect(img_original.copy(), img_subtract_cracks, method=edge_detection)
 
-                imgStack = stackImages(SCALE, ([img, img_pre_processing], [img_crack, img_blob]))
+                imgStack = stackImages(SCALE, ([draw_description(resize_image(img), "Original image"),
+                                                draw_description(resize_image(binary_edge), "Pre processing")],
+                                               [draw_description(resize_image(img_crack_original), "Crack detect"),
+                                                draw_description(resize_image(img_blob), "Blob detect")]))
 
                 cv.imshow("Result", imgStack)
 
@@ -153,7 +152,9 @@ def resize_image(img):
     :param img: image to resize
     :return: image PIL to be resized
     """
-    height, width, _ = img.shape
+
+    height, width = get_shape(img)
+
     if height > RESIZE_HEIGHT_IMAGE:
         height = RESIZE_HEIGHT_IMAGE
     if width > RESIZE_HEIGHT_IMAGE:
@@ -169,14 +170,11 @@ def draw_description(img, text):
     :param img: img in which to insert the descrition
     :return: img with description
     """
+
     bottom = int(0.08 * img.shape[0])
     img = cv.copyMakeBorder(img, 0, bottom, 0, 0, cv.BORDER_CONSTANT, None, (255, 255, 255))
 
-    try:
-        height, _, _ = img.shape
-    except:
-        height, _ = img.shape
-
+    height, _ = get_shape(img)
     cv.putText(img, text, (0, height - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
     return img
 
@@ -233,13 +231,17 @@ def stackImages(scale, imgArray):
 
     return ver
 
-# def convert_cv_to_pil(img):
-#     r"""
-#     Convert the image from open-cv to PIL, resize image
-#     :param img: image in open-cv to convert
-#     :return: image PIL to be converted
-#     """
-#     img = cv.resize(img, (200, 200))
-#     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-#     img = Image.fromarray(img)
-#     return ImageTk.PhotoImage(img)
+
+def get_shape(img):
+    r"""
+    Gets the shape of the image based on the number of channels
+    :param img: img to get shape
+    :return: height, width of the image
+    """
+
+    try:
+        height, width, _ = img.shape
+    except:
+        height, width = img.shape
+
+    return height, width
