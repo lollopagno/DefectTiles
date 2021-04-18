@@ -37,25 +37,23 @@ def start(img_original, filter, edge_detection):
     """
 
     # Conversion color from RGB to grayscale
-    img = cv.cvtColor(img_original, cv.COLOR_RGB2GRAY)
+    img = cv.cvtColor(img_original, cv.COLOR_BGR2GRAY)
 
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
+    img_blur = cv.blur(img_norm, (3, 3))
 
     # Applying the filter (noise reduction)
     if filter == "Median":
-        img_filt = cv.medianBlur(img_norm, 3)
+        img_filt = cv.medianBlur(img_blur, 3)
     elif filter == "Gaussian":
-        img_filt = cv.GaussianBlur(img_norm, (3, 3), 0)
+        img_filt = cv.GaussianBlur(img_blur, (3, 3), 0)
     else:
-        img_filt = cv.bilateralFilter(img_norm, 3, 75, 75)
+        img_filt = cv.bilateralFilter(img_blur, 3, 75, 75)
     # histogram([img, img_filt], ["Grayscale", "Filtered"])
 
     # Edge Detection
     if edge_detection == "Canny":
-        # median_value = img_filt.mean()
-
-        # img_edge = cv.Canny(img_filt, 0.66 * median_value, 1.33 * median_value)  #TODO valutare se considerare il valore medio
         img_edge = cv.Canny(img_filt, 50, 150)
 
     elif edge_detection == "Sobel":
@@ -75,32 +73,25 @@ def start(img_original, filter, edge_detection):
     else:
         raise Exception("Specify the edge detection method: Canny or Sobel")
 
-    img_edge = improved_image(img_original, img_edge)
+    kernel = np.ones((5, 5), np.uint8)
+    closing = cv.morphologyEx(img_edge, cv.MORPH_CLOSE, kernel)
 
-    return img_edge
+    result_edge = thresholding_image(img_filt, closing)
+    return result_edge
 
 
-def improved_image(img, img_edge):
+def thresholding_image(img, img_edge):
     r"""
-    Performs a threshold operation by deleting components specified by threshold values
+    Apply binarization of otsu followed by morphological and bit operations
     :param img: original image
     :param img_edge: binary image that contains the edges
     :return: binary image in which to find for defects
     """
 
-    imgHSV = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+    _, otsu = cv.threshold(img, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
+    otsu_not = cv.bitwise_not(otsu)
+    img_and = cv.bitwise_and(otsu_not, img_edge)
+    kernel = np.ones((7, 7), np.uint8)
+    img_closing = cv.morphologyEx(img_and, cv.MORPH_CLOSE, kernel)
 
-    h_min, s_min, v_min = 0, 0, 107
-    h_max, s_max, v_max = 0, 0, 255
-
-    lower = np.array([h_min, s_min, v_min])
-    upper = np.array([h_max, s_max, v_max])
-
-    mask = cv.inRange(imgHSV, lower, upper)
-    img_result = cv.bitwise_and(img, img, mask=mask)
-    img_result = cv.dilate(img_result, (3, 3), iterations=3)
-    img_result = cv.cvtColor(img_result, cv.COLOR_BGR2GRAY)
-
-    subtract = cv.subtract(img_edge, img_result)
-
-    return subtract
+    return img_closing
