@@ -5,6 +5,7 @@ from Defect import common as utility
 SOBEL = "Sobel"
 BLOBS = "Blob"
 
+
 def detect(img_original, img_edge, method=SOBEL):
     r"""
     Detects blobs in the image
@@ -19,7 +20,7 @@ def detect(img_original, img_edge, method=SOBEL):
 
     kernel = np.ones((3, 35), np.uint8)
     img_closing = cv.morphologyEx(img_edge, cv.MORPH_CLOSE, kernel)
-    cv.imshow("Closing", img_closing)
+    # cv.imshow("Closing", img_closing)
 
     # element = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3))
     # img_edge = cv.dilate(img_edge, element, iterations=2)
@@ -38,7 +39,7 @@ def detect(img_original, img_edge, method=SOBEL):
         approx = cv.approxPolyDP(cnt, 0.05 * peri, True)
         objCor = len(approx)
 
-        if 4 <= objCor <= 7: # TODO cehck this!
+        if 4 <= objCor <= 7:  # TODO cehck this!
 
             if utility.calc_distance(cnt, BLOBS):
                 cv.drawContours(img_original, cnt, -1, (0, 0, 255), 3)
