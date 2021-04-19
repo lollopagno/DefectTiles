@@ -55,6 +55,7 @@ class ErrorEntry(Frame):
         Show the label
         :param text: text to show
         :param width: with of the label
+        :param color: color of the text
         """
         self.label = Label(self, text=text, width=width, fg=color, font=('Arial', 11))
         self.label.pack(side=LEFT, padx=10, pady=30)

@@ -6,7 +6,7 @@ from GUI import Label
 from GUI import Button
 from GUI import Settings
 
-SIZE_WINDOW = "750x400"
+SIZE_WINDOW = "400x400"
 ICON = "Resources/Icon/icon.ico"
 TITLE = "Defect tiles"
 
@@ -34,6 +34,9 @@ class App(Tk):
         Label.EdgeDetectionEntry(frame)                             # Label edge detection
         settingDetection = Settings.SettingsDetectionEntry(frame)   # Checkbox detection
 
+        msgLabel = Label.ErrorEntry(frame)                          # Label information
+
+        buttons.set_message_label(msgLabel)
         buttons.set_state_checkbox_detection(settingDetection)
         buttons.set_state_checkbox_filter(settingFilter)
 

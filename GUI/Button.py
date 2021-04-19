@@ -32,6 +32,7 @@ class ButtonEntry(Frame):
 
         self.stateCheckBoxFilter = None
         self.stateCheckBoxDetection = None
+        self.messageLabel = None
 
         self.path = None
 
@@ -43,8 +44,6 @@ class ButtonEntry(Frame):
 
         btnExit = Button(self, text="Exit", command=self.quit)
         btnExit.pack(side=LEFT, padx=20)
-
-        self.messageLabel = Label.ErrorEntry(self)
 
     def check_state_checkbox(self):
         r"""
@@ -156,6 +155,13 @@ class ButtonEntry(Frame):
         :param state: state of the checkbox filter
         """
         self.stateCheckBoxFilter = state
+
+    def set_message_label(self, obj):
+        r"""
+        Set object message label
+        :param obj: message label object
+        """
+        self.messageLabel = obj
 
 
 def resize_image(img):
