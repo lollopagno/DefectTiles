@@ -22,7 +22,7 @@ img_pre_processing = preprocess.start(img_gray, filter = "Bilateral", edge_detec
 # pinhole.detect(img_pre_processing)
 
 # Blob defect
-blob_detect = blob.detect(img, img=img_pre_processing, method=method)
+blob_detect = blob.detect(img, img_edge=img_pre_processing, method=method)
 
 # Crack defect
 crack_detect = crack.detect(img, img_pre_processing / 255, method=method)

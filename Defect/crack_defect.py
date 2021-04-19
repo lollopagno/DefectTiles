@@ -1,13 +1,14 @@
 import numpy as np
 import cv2 as cv
-import math
+from Defect import common as utility
 
+SOBEL = "Sobel"
+CRACKS = "Cracks"
 RED = np.array([0, 0, 255])
 WHITE = np.array([255, 255, 255])
-MIN_DISTANCE_POLIGON = 7
 
 
-def detect(img_original, img_edge, method="Sobel"):
+def detect(img_original, img_edge, method=SOBEL):
     r"""
     Detects cracks in the image
     :param img_original: original image in which to draw the defects
@@ -26,35 +27,15 @@ def detect(img_original, img_edge, method="Sobel"):
                 cracks_detect[x, y] = 1
 
         # Find for the contours of the identified cracks
-        contours, hierarchy = cv.findContours(cracks_detect.astype('uint8'), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+        contours, _ = cv.findContours(cracks_detect.copy().astype(np.uint8), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
+
         for cnt in contours:
-
-            all_distances = 0  # Total distance of all points of the polygon from the center
-            all_weights = 0  # Total weight of all points of the polygon from the center
-
-            # Calculate the center
-            m = cv.moments(cnt)
-            center = (int(m['m10'] / m['m00']), int(m['m01'] / m['m00']))
-
-            for item in cnt:
-                # Calculate the weighted distance
-                distance = math.sqrt((math.pow(center[0] - item[0][0], 2) + math.pow(center[1] - item[0][1], 2)))
-                weight = 1 if distance < MIN_DISTANCE_POLIGON else 2
-                all_weights += weight
-                all_distances += distance * weight
-
-            all_distances = round(all_distances / all_weights)  # Weighted distance of the polygon
-
-            if all_distances >= MIN_DISTANCE_POLIGON:
-                cv.drawContours(cracks_detect, cnt, -1, (255, 255, 255), 1)
+            if utility.calc_distance(cnt, CRACKS):
+                cv.drawContours(cracks_detect, cnt, -1, (255, 255, 255), 3)
                 cv.drawContours(img_original, cnt, -1, (0, 255, 0), 2)
 
-        subtract = cv.subtract(img_edge, cracks_detect, dtype=cv.CV_8U)
-    else:
-        subtract = np.zeros(img_edge.shape[:2], dtype=np.uint8)
-
-    return img_original, subtract
+    return img_original, cracks_detect.astype(np.uint8)
 
 
 def connected_components(img, method):
@@ -67,16 +48,13 @@ def connected_components(img, method):
 
     height, width = img.shape
 
-    if method == "Sobel":
+    if method == SOBEL:
         value_found = 0.098
         crack_lenght = 200
 
-    elif method == "Canny":
+    else:
         value_found = 1
         crack_lenght = 20
-
-    else:
-        raise Exception("Specify the edge detection method: Canny or Sobel")
 
     visited = np.zeros((height, width), dtype=bool)
 
