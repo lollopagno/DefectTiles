@@ -111,20 +111,32 @@ class ButtonEntry(Frame):
                 img = cv.imread(self.path)
                 img_original = img.copy()
 
+                # Compute histograms and save them.
+                file_name = self.path.split("/")[-1]
+                preprocess.histogram(img, file_name)
+                histogram = cv.imread(f"Resources/Histogram/Hist{file_name}")
+
                 # Pre processing
-                binary_edge = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
+                binary_edge_cracks = preprocess.start(img_original, filter=filter, edge_detection=edge_detection)
+                binary_edge_blob = preprocess.start(img_original, filter=filter, edge_detection=edge_detection,
+                                                    blurring=False)
 
                 # Crack Detect
-                img_crack_original, img_subtract_cracks = crack.detect(img_original=img_original.copy(),
-                                                                       img_edge=binary_edge, method=edge_detection)
+                img_crack_original, img_detected_cracks = crack.detect(img_original=img_original.copy(),
+                                                                       img_edge=binary_edge_cracks,
+                                                                       method=edge_detection)
+
+                binary_edge_blob = cv.subtract(binary_edge_blob, img_detected_cracks, cv.CV_8U)
 
                 # Blob Detect
-                img_blob = blob.detect(img_original.copy(), img_subtract_cracks, method=edge_detection)
+                img_blob = blob.detect(img_original.copy(), binary_edge_blob, method=edge_detection)
 
-                imgStack = stackImages(SCALE, ([draw_description(resize_image(img), "Original image"),
-                                                draw_description(resize_image(binary_edge), "Pre processing")],
-                                               [draw_description(resize_image(img_crack_original), "Crack detect"),
-                                                draw_description(resize_image(img_blob), "Blob detect")]))
+                imgStack = stackImages(SCALE, (
+                    [draw_description(resize_image(img), "Original image"),
+                     draw_description(img_crack_original, "Crack detect"),
+                     draw_description(img_blob, "Blob detect")],
+                    [histogram, draw_description(binary_edge_cracks, "Edge cracks"),
+                     draw_description(binary_edge_blob, "Edge blobs")]))
 
                 cv.imshow("Result", imgStack)
 
