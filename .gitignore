@@ -1,4 +1,6 @@
 *.idea
 *.pyc
 
+*Resources/Histogram
 *various.py
+*hsv.py
