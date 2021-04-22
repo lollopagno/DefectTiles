@@ -11,7 +11,7 @@ class TitleEntry(Frame):
         self.pack(fill=X)
 
         label = Label(self, text="Defect Tiles", width=14, font=('Arial', 17, 'bold'))
-        label.pack(side=TOP, padx=150, pady=10)
+        label.pack(side=TOP, padx=90, pady=10)
 
 
 class FilterEntry(Frame):
