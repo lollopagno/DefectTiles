@@ -39,7 +39,7 @@ def detect(img_original, img_edge, method=SOBEL):
         approx = cv.approxPolyDP(cnt, 0.05 * peri, True)
         objCor = len(approx)
 
-        if 4 <= objCor <= 7:  # TODO cehck this!
+        if objCor >= 4:
 
             if utility.calc_distance(cnt, BLOBS):
                 cv.drawContours(img_original, cnt, -1, (0, 0, 255), 3)
