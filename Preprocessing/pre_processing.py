@@ -7,28 +7,6 @@ MEDIAN_BLUR = "Median"
 GAUSSIAN_BLUR = "Gaussian"
 PATH_IMAGES = "Resources/Histogram/Hist"
 
-
-def histogram(img, file_name):
-    r"""
-    Create the histogram and save it.
-    :param img: image of histogram to be created
-    :param file_name: file name to save it
-    """
-
-    plt.title("Histogram")
-    plt.xlabel("Grayscale values")
-    plt.ylabel("Pixels")
-    plt.xlim([0.0, 255.0])
-
-    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    img = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
-
-    hist, bin_edges = np.histogram(img, bins=256, range=(0, 255))
-    plt.plot(bin_edges[0:-1], hist)
-    plt.savefig(PATH_IMAGES + file_name)
-    plt.clf()
-
-
 def start(img_original, filter, edge_detection, blurring=True):
     r"""
     Performs pre-processing operations
@@ -48,6 +26,10 @@ def start(img_original, filter, edge_detection, blurring=True):
     # Blurring
     if blurring:
         img_norm = cv.blur(img_norm, (3, 3))
+
+    mean= cv.mean(img_original)
+    if mean[0] >= 100 and mean[0] == mean[1] == mean[2]:
+        img_norm = correction_gamma(img_norm, gamma=2.0)
 
     # Applying the filter (noise reduction)
     if filter == MEDIAN_BLUR:  # Median
@@ -82,6 +64,25 @@ def start(img_original, filter, edge_detection, blurring=True):
     result_edge = thresholding_image(img_filt, img_closing)
     return result_edge
 
+def histogram(img, file_name):
+    r"""
+    Create the histogram and save it.
+    :param img: image of histogram to be created
+    :param file_name: file name to save it
+    """
+
+    plt.title("Histogram")
+    plt.xlabel("Grayscale values")
+    plt.ylabel("Pixels")
+    plt.xlim([0.0, 255.0])
+
+    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    img = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
+
+    hist, bin_edges = np.histogram(img, bins=256, range=(0, 255))
+    plt.plot(bin_edges[0:-1], hist)
+    plt.savefig(PATH_IMAGES + file_name)
+    plt.clf()
 
 def thresholding_image(img, img_edge):
     r"""
@@ -103,3 +104,17 @@ def thresholding_image(img, img_edge):
     img_closing = cv.morphologyEx(img_and, cv.MORPH_CLOSE, kernel)
 
     return img_closing
+
+def correction_gamma(image, gamma=0.50):
+    r"""
+    Apply gamma correction
+    :param image: image in which to apply gamma correction
+    :param gamma: gamma value to apply
+    :return: resulting image of the correction
+    """
+
+    invGamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** invGamma) * 255
+        for i in np.arange(0, 256)]).astype("uint8")
+
+    return cv.LUT(image, table)
