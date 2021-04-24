@@ -9,6 +9,8 @@ import numpy as np
 SCALE = 1
 RESIZE_HEIGHT_IMAGE = 400
 RESIZE_WIDTH_IMAGE = 450
+CRACKS = "Cracks"
+BLOBS = "Blobs"
 
 
 def open_file_name():
@@ -114,9 +116,10 @@ class ButtonEntry(Frame):
                 histogram = cv.imread(f"Resources/Histogram/Hist{file_name}")
 
                 # Pre processing
-                binary_edge_cracks = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection)
+                binary_edge_cracks = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection,
+                                                      defect=CRACKS)
                 binary_edge_blob = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection,
-                                                    blurring=False)
+                                                    defect=BLOBS)
 
                 # Crack Detect
                 img_crack_original, img_detected_cracks = crack.detect(img_original=img.copy(),

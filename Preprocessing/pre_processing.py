@@ -6,14 +6,16 @@ CANNY = "Canny"
 MEDIAN_BLUR = "Median"
 GAUSSIAN_BLUR = "Gaussian"
 PATH_IMAGES = "Resources/Histogram/Hist"
+CRACKS = "Cracks"
 
-def start(img_original, filter, edge_detection, blurring=True):
+
+def start(img_original, filter, edge_detection, defect):
     r"""
     Performs pre-processing operations
     :param img_original: image to be processed
     :param filter: type of filter to apply
     :param edge_detection: edge detection method (canny, sobel)
-    :param blurring: whether to apply blurring
+    :param defect: type of defect to be identified
     :return: pre-processed image to detect defects
     """
 
@@ -23,13 +25,12 @@ def start(img_original, filter, edge_detection, blurring=True):
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
 
-    # Blurring
-    if blurring:
+    if defect == CRACKS:
+        # Blurring
         img_norm = cv.blur(img_norm, (3, 3))
 
-    mean= cv.mean(img_original)
-    if mean[0] >= 100 and mean[0] == mean[1] == mean[2]:
-        img_norm = correction_gamma(img_norm, gamma=2.0)
+        # Gamma correction
+        img_norm = correction_gamma(img_original, img_norm, gamma=2.0)
 
     # Applying the filter (noise reduction)
     if filter == MEDIAN_BLUR:  # Median
@@ -64,6 +65,7 @@ def start(img_original, filter, edge_detection, blurring=True):
     result_edge = thresholding_image(img_filt, img_closing)
     return result_edge
 
+
 def histogram(img, file_name):
     r"""
     Create the histogram and save it.
@@ -83,6 +85,7 @@ def histogram(img, file_name):
     plt.plot(bin_edges[0:-1], hist)
     plt.savefig(PATH_IMAGES + file_name)
     plt.clf()
+
 
 def thresholding_image(img, img_edge):
     r"""
@@ -105,16 +108,22 @@ def thresholding_image(img, img_edge):
 
     return img_closing
 
-def correction_gamma(image, gamma=0.50):
+
+def correction_gamma(img_original, img, gamma=0.50):
     r"""
     Apply gamma correction
-    :param image: image in which to apply gamma correction
+    :param img_original: image in which to calculate the average
+    :param img: image in which to apply gamma correction
     :param gamma: gamma value to apply
     :return: resulting image of the correction
     """
 
-    invGamma = 1.0 / gamma
-    table = np.array([((i / 255.0) ** invGamma) * 255
-        for i in np.arange(0, 256)]).astype("uint8")
+    mean = cv.mean(img_original)
+    if mean[0] >= 100 and mean[0] == mean[1] == mean[2]:
+        invGamma = 1.0 / gamma
+        table = np.array([((i / 255.0) ** invGamma) * 255
+                          for i in np.arange(0, 256)]).astype("uint8")
 
-    return cv.LUT(image, table)
+        img = cv.LUT(img, table)
+
+    return img
