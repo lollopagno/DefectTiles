@@ -122,7 +122,7 @@ def correction_gamma(img_original, img, gamma=0.50):
     if mean[0] >= 100 and mean[0] == mean[1] == mean[2]:
         invGamma = 1.0 / gamma
         table = np.array([((i / 255.0) ** invGamma) * 255
-                          for i in np.arange(0, 256)]).astype("uint8")
+                          for i in np.arange(0, 256)]).astype(np.uint8)
 
         img = cv.LUT(img, table)
 
