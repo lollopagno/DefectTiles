@@ -5,7 +5,8 @@ from Defect import common as utility
 SOBEL = "Sobel"
 CRACKS = "Cracks"
 RED = np.array([0, 0, 255])
-WHITE = np.array([255, 255, 255])
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
 
 
 def detect(img_original, img_edge, method=SOBEL):
@@ -32,8 +33,8 @@ def detect(img_original, img_edge, method=SOBEL):
 
         for cnt in contours:
             if utility.calc_distance(cnt, CRACKS):
-                cv.drawContours(cracks_detect, cnt, -1, (255, 255, 255), 3)
-                cv.drawContours(img_original, cnt, -1, (0, 255, 0), 2)
+                cv.drawContours(cracks_detect, [cnt], -1, WHITE, -1)
+                cv.polylines(img_original, cnt, -1, GREEN, 2)
 
     return img_original, cracks_detect.astype(np.uint8)
 

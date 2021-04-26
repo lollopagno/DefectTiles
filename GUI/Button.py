@@ -5,10 +5,14 @@ from Defect import crack_defect as crack
 from Defect import blob_defect as blob
 import cv2 as cv
 import numpy as np
+import os
 
 SCALE = 1
 RESIZE_HEIGHT_IMAGE = 400
 RESIZE_WIDTH_IMAGE = 450
+CRACKS = "Cracks"
+BLOBS = "Blobs"
+PATH_HISTOGRAM = "Resources/Histogram/Hist"
 
 
 def open_file_name():
@@ -111,19 +115,17 @@ class ButtonEntry(Frame):
                 # Compute histograms and save them.
                 file_name = self.path.split("/")[-1]
                 preprocess.histogram(img, file_name)
-                histogram = cv.imread(f"Resources/Histogram/Hist{file_name}")
+                histogram = cv.imread(PATH_HISTOGRAM + file_name)
 
                 # Pre processing
                 binary_edge_cracks = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection)
-                binary_edge_blob = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection,
-                                                    blurring=False)
 
                 # Crack Detect
                 img_crack_original, img_detected_cracks = crack.detect(img_original=img.copy(),
                                                                        img_edge=binary_edge_cracks,
                                                                        method=edge_detection)
 
-                binary_edge_blob = cv.subtract(binary_edge_blob, img_detected_cracks, cv.CV_8U)
+                binary_edge_blob = cv.subtract(binary_edge_cracks, img_detected_cracks, cv.CV_8U)
 
                 # Blob Detect
                 img_blob = blob.detect(img.copy(), binary_edge_blob, method=edge_detection)
@@ -152,6 +154,7 @@ class ButtonEntry(Frame):
                     cv.imshow("Histogram", histogram)
                     cv.imshow("Result detect", imgStackDetect)
 
+                os.remove(PATH_HISTOGRAM + file_name)
         except Exception as e:
             print(e)
 

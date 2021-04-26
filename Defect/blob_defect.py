@@ -4,6 +4,9 @@ from Defect import common as utility
 
 SOBEL = "Sobel"
 BLOBS = "Blob"
+WHITE = (255, 255, 255)
+RED = (0, 0, 255)
+BLUE = (255, 0, 0)
 
 
 def detect(img_original, img_edge, method=SOBEL):
@@ -18,30 +21,28 @@ def detect(img_original, img_edge, method=SOBEL):
     if method == SOBEL:
         _, img_edge = cv.threshold(img_edge, 50, 255, cv.THRESH_BINARY)
 
-    kernel = np.ones((3, 35), np.uint8)
-    img_closing = cv.morphologyEx(img_edge, cv.MORPH_CLOSE, kernel)
-    # cv.imshow("Closing", img_closing)
+    kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3))
+    img_dilate = cv.dilate(img_edge, kernel)
+    img_closing = cv.morphologyEx(img_dilate, cv.MORPH_CLOSE, kernel)
 
-    # element = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3))
-    # img_edge = cv.dilate(img_edge, element, iterations=2)
-    # img_ellipse = cv.erode(img_edge, element, iterations=1)
-    # cv.imshow("Ellipse", img_ellipse)
+    contours_blob, _ = cv.findContours(img_closing, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+    blob_detect = np.zeros((img_original.shape[:2]), dtype=np.uint8)
 
-    contours, _ = cv.findContours(img_closing, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
+    # Detect blobs
+    for blob in contours_blob:
 
-    for cnt in contours:
-
-        area = cv.contourArea(cnt)
-        if area < 2.0:
+        area = cv.contourArea(blob)
+        if area < 20:
             continue
 
-        peri = cv.arcLength(cnt, True)
-        approx = cv.approxPolyDP(cnt, 0.05 * peri, True)
+        peri = cv.arcLength(blob, -1)
+        approx = cv.approxPolyDP(blob, 0.05 * peri, -1)
         objCor = len(approx)
 
         if objCor >= 4:
 
-            if utility.calc_distance(cnt, BLOBS):
-                cv.drawContours(img_original, cnt, -1, (0, 0, 255), 3)
+            if utility.calc_distance(blob, BLOBS):
+                cv.drawContours(blob_detect, [blob], -1, WHITE, -1)
+                cv.polylines(img_original, [blob], -1, RED, 2)
 
     return img_original

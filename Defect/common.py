@@ -5,17 +5,16 @@ CRACKS = "Cracks"
 MIN_DISTANCE_CRACK = 5
 RANGE_MIN_CIRCLES_CRACK = 10
 
-MIN_DISTANCE_BLOB = 3
-MAX_DISTANCE_BLOB = 20
+MIN_DISTANCE_BLOB = 0  # 3
+MAX_DISTANCE_BLOB = 20  # 10  # 20
 RANGE_MAX_CIRCLES_BLOB = 6
 
-def calc_distance(contour, defect, min_distance=5, max_distance=7):
+
+def calc_distance(contour, defect):
     r"""
     Calculate the weighted distance between all points of the contour with its center
     :param contour: current contour
     :param defect: type of defect
-    :param min_distance: minimum distance to evaluate the calculation weight to be attributed
-    :param max_distance: maximum distance to evaluate the calculation weight to be attributed
     :return: true if the all distances is greater or less than the minimum distance
     """
 
@@ -45,9 +44,18 @@ def calc_distance(contour, defect, min_distance=5, max_distance=7):
         return False
 
     all_distances_array.sort()
-    range_distance = all_distances_array[-1] - all_distances_array[0]
+    range_distance = round(all_distances_array[-1] - all_distances_array[0])
 
     if defect == CRACKS:
         return all_distances > MIN_DISTANCE_CRACK and range_distance > RANGE_MIN_CIRCLES_CRACK
+
     else:
-        return MIN_DISTANCE_BLOB <= all_distances <= MAX_DISTANCE_BLOB and 2.5 < range_distance <= RANGE_MAX_CIRCLES_BLOB
+        first_item = all_distances_array[0]
+        if 0 <= range_distance <= 3 and 1 <= all_distances <= 9:
+            # Potential circle
+            isCircle = all_distances - 2 <= first_item
+            return isCircle
+        else:
+            # Potential ellipse
+            isEllipse = all_distances - 2 >= first_item
+            return isEllipse
