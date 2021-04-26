@@ -1,21 +1,21 @@
 import cv2 as cv
 import math
 
+ELLIPSE = "Ellipse"
 CRACKS = "Cracks"
 MIN_DISTANCE_CRACK = 5
 RANGE_MIN_CIRCLES_CRACK = 10
 
 MIN_DISTANCE_BLOB = 3
-MAX_DISTANCE_BLOB = 20
+MAX_DISTANCE_BLOB = 10  # 20
 RANGE_MAX_CIRCLES_BLOB = 6
 
-def calc_distance(contour, defect, min_distance=5, max_distance=7):
+
+def calc_distance(contour, defect):
     r"""
     Calculate the weighted distance between all points of the contour with its center
     :param contour: current contour
     :param defect: type of defect
-    :param min_distance: minimum distance to evaluate the calculation weight to be attributed
-    :param max_distance: maximum distance to evaluate the calculation weight to be attributed
     :return: true if the all distances is greater or less than the minimum distance
     """
 
@@ -34,11 +34,12 @@ def calc_distance(contour, defect, min_distance=5, max_distance=7):
             if defect == CRACKS:
                 weight = 1 if distance > MIN_DISTANCE_CRACK else 2
             else:
-                weight = 1 if MIN_DISTANCE_BLOB <= distance <= MAX_DISTANCE_BLOB else 2
+                weight = 1 if MIN_DISTANCE_BLOB < distance <= MAX_DISTANCE_BLOB else 2
 
             all_weights += weight
             all_distances += distance * weight
             all_distances_array.append(distance * weight)
+
 
         all_distances = round(all_distances / all_weights)  # Weighted distance of the polygon
     except:
@@ -49,5 +50,7 @@ def calc_distance(contour, defect, min_distance=5, max_distance=7):
 
     if defect == CRACKS:
         return all_distances > MIN_DISTANCE_CRACK and range_distance > RANGE_MIN_CIRCLES_CRACK
+    # elif defect == ELLIPSE:
+        #return MIN_DISTANCE_BLOB < all_distances <= MAX_DISTANCE_BLOB and 10 <= range_distance < 25
     else:
-        return MIN_DISTANCE_BLOB <= all_distances <= MAX_DISTANCE_BLOB and 2.5 < range_distance <= RANGE_MAX_CIRCLES_BLOB
+        return MIN_DISTANCE_BLOB < all_distances <= MAX_DISTANCE_BLOB and 2.5 < range_distance < RANGE_MAX_CIRCLES_BLOB
