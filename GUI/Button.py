@@ -118,17 +118,14 @@ class ButtonEntry(Frame):
                 histogram = cv.imread(PATH_HISTOGRAM + file_name)
 
                 # Pre processing
-                binary_edge_cracks = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection,
-                                                      defect=CRACKS)
-                binary_edge_blob = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection,
-                                                    defect=BLOBS)
+                binary_edge_cracks = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection)
 
                 # Crack Detect
                 img_crack_original, img_detected_cracks = crack.detect(img_original=img.copy(),
                                                                        img_edge=binary_edge_cracks,
                                                                        method=edge_detection)
 
-                binary_edge_blob = cv.subtract(binary_edge_blob, img_detected_cracks, cv.CV_8U)
+                binary_edge_blob = cv.subtract(binary_edge_cracks, img_detected_cracks, cv.CV_8U)
 
                 # Blob Detect
                 img_blob = blob.detect(img.copy(), binary_edge_blob, method=edge_detection)

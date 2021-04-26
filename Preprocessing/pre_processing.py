@@ -7,15 +7,15 @@ MEDIAN_BLUR = "Median"
 GAUSSIAN_BLUR = "Gaussian"
 PATH_IMAGES = "Resources/Histogram/Hist"
 CRACKS = "Cracks"
+BLOBS = "Blobs"
 
 
-def start(img_original, filter, edge_detection, defect):
+def start(img_original, filter, edge_detection):
     r"""
     Performs pre-processing operations
     :param img_original: image to be processed
     :param filter: type of filter to apply
     :param edge_detection: edge detection method (canny, sobel)
-    :param defect: type of defect to be identified
     :return: pre-processed image to detect defects
     """
 
@@ -25,12 +25,11 @@ def start(img_original, filter, edge_detection, defect):
     # Normalization
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
 
-    if defect == CRACKS:
-        # Blurring
-        img_norm = cv.blur(img_norm, (3, 3))
+    # Blurring
+    img_norm = cv.blur(img_norm, (3, 3))
 
-        # Gamma correction
-        img_norm = correction_gamma(img_original, img_norm, gamma=2.0)
+    # Gamma correction
+    img_norm = correction_gamma(img_original, img_norm, gamma=2)
 
     # Applying the filter (noise reduction)
     if filter == MEDIAN_BLUR:  # Median
@@ -109,7 +108,7 @@ def thresholding_image(img, img_edge):
     return img_closing
 
 
-def correction_gamma(img_original, img, gamma=0.50):
+def correction_gamma(img_original, img, gamma):
     r"""
     Apply gamma correction
     :param img_original: image in which to calculate the average
