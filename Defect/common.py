@@ -20,8 +20,8 @@ def calc_distance(contour, defect):
 
     try:
         all_distances_array = []
-        all_distances = 0  # Total distance of all points of the polygon from the center
-        all_weights = 0  # Total weight of all points of the polygon from the center
+        all_distances_contour = 0  # Total distance of all points of the polygon from the center
+        all_weights_contour = 0  # Total weight of all points of the polygon from the center
 
         moment = cv.moments(contour)
         center = (int(moment['m10'] / moment['m00']), int(moment['m01'] / moment['m00']))
@@ -35,11 +35,11 @@ def calc_distance(contour, defect):
             else:
                 weight = 1 if MIN_DISTANCE_BLOB <= distance <= MAX_DISTANCE_BLOB else 2
 
-            all_weights += weight
-            all_distances += distance * weight
-            all_distances_array.append(distance * weight)
+            all_weights_contour += weight
+            all_distances_contour += distance * weight
+            all_distances_array.append(distance)
 
-        all_distances = round(all_distances / all_weights)  # Weighted distance of the polygon
+        average_distances_contour = round(all_distances_contour / all_weights_contour)  # Weighted distance of the polygon
     except:
         return False
 
@@ -47,15 +47,15 @@ def calc_distance(contour, defect):
     range_distance = round(all_distances_array[-1] - all_distances_array[0])
 
     if defect == CRACKS:
-        return all_distances > MIN_DISTANCE_CRACK and range_distance > RANGE_MIN_CIRCLES_CRACK
+        return average_distances_contour > MIN_DISTANCE_CRACK and range_distance > RANGE_MIN_CIRCLES_CRACK
 
     else:
-        first_item = all_distances_array[0]
-        if 0 <= range_distance <= 3 and 1 <= all_distances <= 9:
+        min_distance = all_distances_array[0]
+        if 0 <= range_distance <= 3 and 1 <= average_distances_contour <= 9:
             # Potential circle
-            isCircle = all_distances - 2 <= first_item
+            isCircle = average_distances_contour - 2 <= min_distance
             return isCircle
         else:
             # Potential ellipse
-            isEllipse = all_distances - 2 >= first_item
+            isEllipse = average_distances_contour - 2 >= min_distance
             return isEllipse
