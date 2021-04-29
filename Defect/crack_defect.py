@@ -21,11 +21,27 @@ def detect(img_original, img_edge, method=SOBEL):
     cracks = connected_components(img_edge / 255, method)
     cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
+    mean_original_img = cv.mean(img_original)
+
     if len(cracks) != 0:
         for crack in cracks:
-            for i in range(0, len(crack)):
+
+            intensity_pixels = []
+            contours = []
+            for _ in range(0, len(crack)):
                 x, y = crack.pop()
-                cracks_detect[x, y] = 1
+                contours.append([y, x])
+                intensity_pixels.append(img_original[x, y][0])
+
+            mean_area = np.mean(intensity_pixels)
+
+            if mean_original_img[0] == mean_original_img[1]:
+                if mean_area < mean_original_img[0]:
+                    contours = np.array(contours).astype(np.int32)
+                    cv.drawContours(cracks_detect, [contours], -1, WHITE, -1)
+            else:
+                contours = np.array(contours).astype(np.int32)
+                cv.drawContours(cracks_detect, [contours], -1, WHITE, -1)
 
         # Find for the contours of the identified cracks
         contours, _ = cv.findContours(cracks_detect.copy().astype(np.uint8), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
