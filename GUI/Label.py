@@ -10,8 +10,8 @@ class TitleEntry(Frame):
         super().__init__(parent)
         self.pack(fill=X)
 
-        label = Label(self, text="Defect Tiles", width=14, font=('Arial', 17, 'bold'))
-        label.pack(side=TOP, padx=150, pady=10)
+        label = Label(self, text="Defect detection of tiles", width=20, font=('Arial', 17, 'bold'))
+        label.pack(side=TOP, padx=50, pady=10)
 
 
 class FilterEntry(Frame):

@@ -6,36 +6,16 @@ CANNY = "Canny"
 MEDIAN_BLUR = "Median"
 GAUSSIAN_BLUR = "Gaussian"
 PATH_IMAGES = "Resources/Histogram/Hist"
+CRACKS = "Cracks"
+BLOBS = "Blobs"
 
 
-def histogram(img, file_name):
-    r"""
-    Create the histogram and save it.
-    :param img: image of histogram to be created
-    :param file_name: file name to save it
-    """
-
-    plt.title("Histogram")
-    plt.xlabel("Grayscale values")
-    plt.ylabel("Pixels")
-    plt.xlim([0.0, 255.0])
-
-    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    img = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
-
-    hist, bin_edges = np.histogram(img, bins=256, range=(0, 255))
-    plt.plot(bin_edges[0:-1], hist)
-    plt.savefig(PATH_IMAGES + file_name)
-    plt.clf()
-
-
-def start(img_original, filter, edge_detection, blurring=True):
+def start(img_original, filter, edge_detection):
     r"""
     Performs pre-processing operations
     :param img_original: image to be processed
     :param filter: type of filter to apply
     :param edge_detection: edge detection method (canny, sobel)
-    :param blurring: whether to apply blurring
     :return: pre-processed image to detect defects
     """
 
@@ -46,8 +26,10 @@ def start(img_original, filter, edge_detection, blurring=True):
     img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
 
     # Blurring
-    if blurring:
-        img_norm = cv.blur(img_norm, (3, 3))
+    img_norm = cv.blur(img_norm, (3, 3))
+
+    # Gamma correction
+    img_norm = correction_gamma(img_original, img_norm, gamma=2)
 
     # Applying the filter (noise reduction)
     if filter == MEDIAN_BLUR:  # Median
@@ -83,6 +65,27 @@ def start(img_original, filter, edge_detection, blurring=True):
     return result_edge
 
 
+def histogram(img, file_name):
+    r"""
+    Create the histogram and save it.
+    :param img: image of histogram to be created
+    :param file_name: file name to save it
+    """
+
+    plt.title("Histogram")
+    plt.xlabel("Grayscale values")
+    plt.ylabel("Pixels")
+    plt.xlim([0.0, 255.0])
+
+    img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    img = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
+
+    hist, bin_edges = np.histogram(img, bins=256, range=(0, 255))
+    plt.plot(bin_edges[0:-1], hist)
+    plt.savefig(PATH_IMAGES + file_name)
+    plt.clf()
+
+
 def thresholding_image(img, img_edge):
     r"""
     Apply binarization of otsu followed by morphological and bit operations
@@ -103,3 +106,23 @@ def thresholding_image(img, img_edge):
     img_closing = cv.morphologyEx(img_and, cv.MORPH_CLOSE, kernel)
 
     return img_closing
+
+
+def correction_gamma(img_original, img, gamma):
+    r"""
+    Apply gamma correction
+    :param img_original: image in which to calculate the average
+    :param img: image in which to apply gamma correction
+    :param gamma: gamma value to apply
+    :return: resulting image of the correction
+    """
+
+    mean = cv.mean(img_original)
+    if mean[0] >= 100 and mean[0] == mean[1] == mean[2]:
+        invGamma = 1.0 / gamma
+        table = np.array([((i / 255.0) ** invGamma) * 255
+                          for i in np.arange(0, 256)]).astype(np.uint8)
+
+        img = cv.LUT(img, table)
+
+    return img

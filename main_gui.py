@@ -8,7 +8,7 @@ from GUI import Settings
 
 SIZE_WINDOW = "400x400"
 ICON = "Resources/Icon/icon.ico"
-TITLE = "Defect tiles"
+TITLE_WINDOW = "Defect detection of tiles"
 
 
 class App(Tk):
@@ -20,7 +20,7 @@ class App(Tk):
         frame = Frame(self)
         frame.grid(row=0, column=0)
 
-        self.title(TITLE)
+        self.title(TITLE_WINDOW)
         self.iconbitmap(ICON)
         self.geometry(SIZE_WINDOW)
         self.resizable(width=True, height=True)
