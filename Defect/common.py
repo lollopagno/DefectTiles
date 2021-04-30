@@ -1,13 +1,10 @@
 import cv2 as cv
+import numpy as np
 import math
 
 CRACKS = "Cracks"
 MIN_DISTANCE_CRACK = 5
-RANGE_MIN_CIRCLES_CRACK = 10
-
-MIN_DISTANCE_BLOB = 0  # 3
-MAX_DISTANCE_BLOB = 20  # 10  # 20
-RANGE_MAX_CIRCLES_BLOB = 6
+RANGE_MIN_RADIUS_CRACK = 10
 
 
 def calc_distance(contour, defect):
@@ -19,43 +16,47 @@ def calc_distance(contour, defect):
     """
 
     try:
-        all_distances_array = []
-        all_distances_contour = 0  # Total distance of all points of the polygon from the center
-        all_weights_contour = 0  # Total weight of all points of the polygon from the center
+        all_rays_array = []
+        all_rays = 0  # Total distance of all points of the polygon from the center
 
         moment = cv.moments(contour)
         center = (int(moment['m10'] / moment['m00']), int(moment['m01'] / moment['m00']))
 
         for item in contour:
             # Calculate the weighted distance
-            distance = math.sqrt((math.pow(center[0] - item[0][0], 2) + math.pow(center[1] - item[0][1], 2)))
+            radius = np.sqrt((math.pow(center[0] - item[0][0], 2) + math.pow(center[1] - item[0][1], 2)))
 
-            if defect == CRACKS:
-                weight = 1 if distance > MIN_DISTANCE_CRACK else 2
-            else:
-                weight = 1 if MIN_DISTANCE_BLOB <= distance <= MAX_DISTANCE_BLOB else 2
+            all_rays += radius
+            all_rays_array.append(radius)
 
-            all_weights_contour += weight
-            all_distances_contour += distance * weight
-            all_distances_array.append(distance)
-
-        average_distances_contour = round(all_distances_contour / all_weights_contour)  # Weighted distance of the polygon
-    except:
+        average_radius_contour = all_rays / len(all_rays_array)  # Weighted distance of the polygon
+    except Exception:
         return False
 
-    all_distances_array.sort()
-    range_distance = round(all_distances_array[-1] - all_distances_array[0])
+    all_rays_array.sort()
+    range_radius = round(all_rays_array[-1] - all_rays_array[0])
 
     if defect == CRACKS:
-        return average_distances_contour > MIN_DISTANCE_CRACK and range_distance > RANGE_MIN_CIRCLES_CRACK
+        return average_radius_contour > MIN_DISTANCE_CRACK and range_radius > RANGE_MIN_RADIUS_CRACK
 
     else:
-        min_distance = all_distances_array[0]
-        if 0 <= range_distance <= 3 and 1 <= average_distances_contour <= 9:
-            # Potential circle
-            isCircle = average_distances_contour - 2 <= min_distance
-            return isCircle
+        _, radius = cv.minEnclosingCircle(contour)
+        maxRadius = radius + 1
+        minRadius = radius - 1
+
+        if minRadius <= average_radius_contour <= maxRadius:
+            # Circle detected
+            return True
+
         else:
             # Potential ellipse
-            isEllipse = average_distances_contour - 2 >= min_distance
-            return isEllipse
+            ellipse = cv.fitEllipse(contour)
+            (center, axes, orientation) = ellipse
+            majoraxis_length = max(axes)
+            minoraxis_length = min(axes)
+            eccentricity = round(np.sqrt(1 - (minoraxis_length / majoraxis_length) ** 2), 2)
+
+            if radius - average_radius_contour <= 2:
+                return eccentricity < 0.8
+            elif radius - average_radius_contour <= 3.5:
+                return eccentricity < 0.98  # TODO per ricerca più ristretta mettere 0.8
