@@ -83,6 +83,8 @@ def connected_components(img, method):
     for i in range(0, height):
         for j in range(0, width):
             lenght_components = 0
+            height_components = 0
+            width_components = 0
 
             if visited[i, j]:  # If i have already visited it, continue
                 continue
@@ -107,11 +109,16 @@ def connected_components(img, method):
                             tmp_stack.append((x - 1, y - 1))
                             visited[x - 1, y - 1] = True
 
+                            height_components += 0.5
+                            width_components += 0.5
+
                     if x - 1 >= 0:
                         p2 = img[x - 1, y]
                         if p2 >= value_found and not visited[x - 1, y]:
                             tmp_stack.append((x - 1, y))
                             visited[x - 1, y] = True
+
+                            height_components += 1
 
                     if x - 1 >= 0 and y + 1 < width:
                         p3 = img[x - 1, y + 1]
@@ -119,11 +126,16 @@ def connected_components(img, method):
                             tmp_stack.append((x - 1, y + 1))
                             visited[x - 1, y + 1] = True
 
+                            height_components += 0.5
+                            width_components += 0.5
+
                     if y - 1 >= 0:
                         p4 = img[x, y - 1]
                         if p4 >= value_found and not visited[x, y - 1]:
                             tmp_stack.append((x, y - 1))
                             visited[x, y - 1] = True
+
+                            width_components += 1
 
                     if y + 1 < width:
                         p5 = img[x, y + 1]
@@ -131,11 +143,16 @@ def connected_components(img, method):
                             tmp_stack.append((x, y + 1))
                             visited[x, y + 1] = True
 
+                            width_components += 1
+
                     if x + 1 < height and y - 1 >= 0:
                         p6 = img[x + 1, y - 1]
                         if p6 >= value_found and not visited[x + 1, y - 1]:
                             tmp_stack.append((x + 1, y - 1))
                             visited[x + 1, y - 1] = True
+
+                            height_components += 0.5
+                            width_components += 0.5
 
                     if x + 1 < height:
                         p7 = img[x + 1, y]
@@ -143,15 +160,26 @@ def connected_components(img, method):
                             tmp_stack.append((x + 1, y))
                             visited[x + 1, y] = True
 
+                            height_components += 1
+
                     if x + 1 < height and y + 1 < width:
                         p8 = img[x + 1, y + 1]
                         if p8 >= value_found and not visited[x + 1, y + 1]:
                             tmp_stack.append((x + 1, y + 1))
                             visited[x + 1, y + 1] = True
 
+                            height_components += 0.5
+                            width_components += 0.5
+
                 if lenght_components >= crack_lenght:
-                    # Crack cetected
-                    coordinates_result_cracks.append(coordinates_current_component.copy())
+
+                    max_value = max((height_components, width_components))
+                    min_value = min((height_components, width_components))
+                    diff = max_value - min_value
+
+                    if diff >= 15.0:
+                        # Crack cetected
+                        coordinates_result_cracks.append(coordinates_current_component.copy())
 
                 coordinates_current_component.clear()
 
