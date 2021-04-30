@@ -106,6 +106,11 @@ class ButtonEntry(Frame):
         Start detect
         """
         try:
+
+            if not os.path.isdir("Resources/Histogram"):
+                # Create directory histogram
+                os.mkdir("Resources/Histogram")
+
             filter, edge_detection = self.check_state_checkbox()
             if self.path is not None:
                 self.messageLabel.disabled()
