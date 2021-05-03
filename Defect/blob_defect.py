@@ -21,9 +21,12 @@ def detect(img_original, img_edge, method=SOBEL):
     if method == SOBEL:
         _, img_edge = cv.threshold(img_edge, 50, 255, cv.THRESH_BINARY)
 
-    kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3))
-    img_dilate = cv.dilate(img_edge, kernel)
-    img_closing = cv.morphologyEx(img_dilate, cv.MORPH_CLOSE, kernel)
+    # Kernel
+    kernel5 = cv.getStructuringElement(cv.MORPH_ELLIPSE, (5, 5))
+    kernel3 = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3))
+
+    img_dilate = cv.dilate(img_edge, kernel3)
+    img_closing = cv.morphologyEx(img_dilate, cv.MORPH_CLOSE, kernel5)
 
     contours_blob, _ = cv.findContours(img_closing, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
     blob_detect = np.zeros((img_original.shape[:2]), dtype=np.uint8)
@@ -35,7 +38,7 @@ def detect(img_original, img_edge, method=SOBEL):
         if area < 20:
             continue
 
-        peri = cv.arcLength(blob, -1)
+        peri = cv.arcLength(blob, -1)  # Perimeter
         approx = cv.approxPolyDP(blob, 0.05 * peri, -1)
         objCor = len(approx)
 

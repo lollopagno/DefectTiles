@@ -44,7 +44,12 @@ def calc_distance(contour, defect):
         maxRadius = radius + 1
         minRadius = radius - 1
 
-        if minRadius <= average_radius_contour <= maxRadius:
+        area = cv.contourArea(contour)
+        perimeter = cv.arcLength(contour, -1)
+        circularity = (4 * math.pi * area) / math.pow(perimeter, 2)
+
+        print(circularity)
+        if minRadius <= average_radius_contour <= maxRadius or circularity >= 0.8:
             # Circle detected
             return True
 
@@ -55,8 +60,8 @@ def calc_distance(contour, defect):
             majoraxis_length = max(axes)
             minoraxis_length = min(axes)
             eccentricity = round(np.sqrt(1 - (minoraxis_length / majoraxis_length) ** 2), 2)
-
-            if radius - average_radius_contour <= 2:
-                return eccentricity < 0.8
-            elif radius - average_radius_contour <= 3.5:
-                return eccentricity < 0.98  # TODO per ricerca più ristretta mettere 0.8
+            print(eccentricity)
+            # if radius - average_radius_contour <= 2:
+            #     return eccentricity >= 0.8
+            if radius - average_radius_contour <= 3.5:
+                return eccentricity >= 0.7  # TODO per ricerca più ristretta mettere 0.8
