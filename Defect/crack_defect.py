@@ -43,6 +43,8 @@ def detect(img_original, img_edge, method=SOBEL):
                 contours = np.array(contours).astype(np.int32)
                 cv.drawContours(cracks_detect, [contours], -1, WHITE, -1)
 
+        cracks_detect = cv.morphologyEx(cracks_detect, cv.MORPH_CLOSE, (7, 7))
+
         # Find for the contours of the identified cracks
         contours, _ = cv.findContours(cracks_detect.copy().astype(np.uint8), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
         cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
