@@ -50,8 +50,8 @@ class ButtonEntry(Frame):
 
     def check_state_checkbox(self):
         r"""
-         Check the current state of the checkbox filters and edge detection methods.
-        :return: filter and edge detection method chosen by the user
+        Check the current state of the checkbox filters.
+        :return: filter chosen by the user
         """
         self.messageLabel.disabled()
 
@@ -70,17 +70,6 @@ class ButtonEntry(Frame):
 
         self.messageLabel.disabled()
 
-        # Check state check box edge detection method
-        sobel, canny = self.stateCheckBoxDetection.get_state()
-        if (sobel and canny) or (not sobel and not canny):
-            self.messageLabel.enabled("Specify the edge detection method: Canny or Sobel!", 38, "red")
-            raise Exception("Error edge detection!")
-        elif sobel:
-            method_edge_detection = "Sobel"
-        else:
-            method_edge_detection = "Canny"
-
-        self.messageLabel.disabled()
 
         # Check if image is loaded
         if self.path is None:
@@ -89,7 +78,7 @@ class ButtonEntry(Frame):
 
         self.messageLabel.disabled()
 
-        return filter, method_edge_detection
+        return filter
 
     def open_img(self):
         r"""
@@ -111,7 +100,7 @@ class ButtonEntry(Frame):
                 # Create directory histogram
                 os.mkdir("Resources/Histogram")
 
-            filter, edge_detection = self.check_state_checkbox()
+            filter = self.check_state_checkbox()
             if self.path is not None:
                 self.messageLabel.disabled()
 
@@ -123,17 +112,16 @@ class ButtonEntry(Frame):
                 histogram = cv.imread(PATH_HISTOGRAM + file_name)
 
                 # Pre processing
-                binary_edge_cracks = preprocess.start(img.copy(), filter=filter, edge_detection=edge_detection)
+                binary_edge_cracks = preprocess.start(img.copy(), filter=filter)
 
                 # Crack Detect
                 img_crack_original, img_detected_cracks = crack.detect(img_original=img.copy(),
-                                                                       img_edge=binary_edge_cracks,
-                                                                       method=edge_detection)
+                                                                       img_edge=binary_edge_cracks)
 
                 binary_edge_blob = cv.subtract(binary_edge_cracks, img_detected_cracks, cv.CV_8U)
 
                 # Blob Detect
-                img_blob = blob.detect(img.copy(), binary_edge_blob, method=edge_detection)
+                img_blob = blob.detect(img.copy(), binary_edge_blob)
 
                 cv.destroyWindow('Original')
                 cv.destroyWindow('Histogram')
@@ -163,12 +151,6 @@ class ButtonEntry(Frame):
         except Exception as e:
             print(e)
 
-    def set_state_checkbox_detection(self, state):
-        r"""
-        Set the state of the checkbox detection methods
-        :param state: state of the checkbox detection methods
-        """
-        self.stateCheckBoxDetection = state
 
     def set_state_checkbox_filter(self, state):
         r"""
