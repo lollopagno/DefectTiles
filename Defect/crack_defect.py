@@ -2,23 +2,21 @@ import numpy as np
 import cv2 as cv
 from Defect import common as utility
 
-SOBEL = "Sobel"
-CRACKS = "Cracks"
 RED = np.array([0, 0, 255])
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 
+CRACKS = "Cracks"
 
-def detect(img_original, img_edge, method=SOBEL):
+def detect(img_original, img_edge):
     r"""
     Detects cracks in the image
     :param img_original: original image in which to draw the defects
     :param img_edge: binary image that contains the edges
-    :param method: edge detection method (canny, sobel)
     :return: original image with cracks detected, binary image with cracks detected
     """
 
-    cracks = connected_components(img_edge / 255, method)
+    cracks = connected_components(img_edge / 255)
     cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
     mean_original_img = cv.mean(img_original)
@@ -50,30 +48,29 @@ def detect(img_original, img_edge, method=SOBEL):
         cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
         for cnt in contours:
-            if utility.calc_distance(cnt, CRACKS):
+
+            area = cv.contourArea(cnt)
+            if area < 20:
+                continue
+
+            if utility.calculate_circolarity(cnt, area, CRACKS):
                 cv.drawContours(cracks_detect, [cnt], -1, WHITE, -1)
                 cv.polylines(img_original, cnt, -1, GREEN, 2)
 
     return img_original, cracks_detect.astype(np.uint8)
 
 
-def connected_components(img, method):
+def connected_components(img):
     r"""
     Detect connected components in an image
-    :param method: edge detection method (canny, sobel)
     :param img: image in which to detect connected components
     :return: stack with the coordinates of the detected cracks
     """
 
     height, width = img.shape
 
-    if method == SOBEL:
-        value_found = 0.098
-        crack_lenght = 200
-
-    else:
-        value_found = 1
-        crack_lenght = 20
+    value_found = 1
+    crack_lenght = 20
 
     visited = np.zeros((height, width), dtype=bool)
 

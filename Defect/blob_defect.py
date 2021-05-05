@@ -22,11 +22,11 @@ def detect(img_original, img_edge, method=SOBEL):
         _, img_edge = cv.threshold(img_edge, 50, 255, cv.THRESH_BINARY)
 
     # Kernel
-    kernel5 = cv.getStructuringElement(cv.MORPH_ELLIPSE, (5, 5))
-    kernel3 = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3))
+    kernel_size_5 = cv.getStructuringElement(cv.MORPH_ELLIPSE, (5, 5))
+    kernel_size_3 = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3))
 
-    img_dilate = cv.dilate(img_edge, kernel3)
-    img_closing = cv.morphologyEx(img_dilate, cv.MORPH_CLOSE, kernel5)
+    img_dilate = cv.dilate(img_edge, kernel_size_3)
+    img_closing = cv.morphologyEx(img_dilate, cv.MORPH_CLOSE, kernel_size_5)
 
     contours_blob, _ = cv.findContours(img_closing, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
     blob_detect = np.zeros((img_original.shape[:2]), dtype=np.uint8)
@@ -44,7 +44,7 @@ def detect(img_original, img_edge, method=SOBEL):
 
         if objCor >= 4:
 
-            if utility.calc_distance(blob, BLOBS):
+            if utility.calculate_circolarity(blob, area, BLOBS):
                 cv.drawContours(blob_detect, [blob], -1, WHITE, -1)
                 cv.polylines(img_original, [blob], -1, RED, 2)
 
