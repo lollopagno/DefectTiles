@@ -7,58 +7,130 @@ MIN_DISTANCE_CRACK = 5
 RANGE_MIN_RADIUS_CRACK = 10
 
 
-def calc_distance(contour, defect):
+def calculate_circolarity(contour, area, defect):
     r"""
-    Calculate the weighted distance between all points of the contour with its center
+    Calculate ....
+    :param area:
     :param contour: current contour
     :param defect: type of defect
     :return: true if the all distances is greater or less than the minimum distance
     """
 
-    try:
-        all_rays_array = []
-        all_rays = 0  # Total distance of all points of the polygon from the center
-
-        moment = cv.moments(contour)
-        center = (int(moment['m10'] / moment['m00']), int(moment['m01'] / moment['m00']))
-
-        for item in contour:
-            # Calculate the weighted distance
-            radius = np.sqrt((math.pow(center[0] - item[0][0], 2) + math.pow(center[1] - item[0][1], 2)))
-
-            all_rays += radius
-            all_rays_array.append(radius)
-
-        average_radius_contour = all_rays / len(all_rays_array)  # Weighted distance of the polygon
-    except Exception:
-        return False
-
-    all_rays_array.sort()
-    range_radius = round(all_rays_array[-1] - all_rays_array[0])
-
-    area = cv.contourArea(contour)
     perimeter = cv.arcLength(contour, -1)
     circularity = (4 * math.pi * area) / math.pow(perimeter, 2)
 
     if defect == CRACKS:
-        return circularity <= 0.2 or (average_radius_contour > MIN_DISTANCE_CRACK and range_radius > RANGE_MIN_RADIUS_CRACK)
+        return circularity <= 0.35
 
     else:
-        _, radius = cv.minEnclosingCircle(contour)
-        maxRadius = radius + 1
-        minRadius = radius - 1
 
-        if minRadius <= average_radius_contour <= maxRadius or circularity >= 0.8:
+        if circularity >= 0.8:
             # Circle detected
             return True
 
-        else:
+        elif circularity >= 0.5:
+
             # Potential ellipse
             ellipse = cv.fitEllipse(contour)
             (center, axes, orientation) = ellipse
             majoraxis_length = max(axes)
             minoraxis_length = min(axes)
             eccentricity = round(np.sqrt(1 - (minoraxis_length / majoraxis_length) ** 2), 2)
+            return eccentricity >= 0.8
 
-            if radius - average_radius_contour <= 3.5:
-                return eccentricity >= 0.7
+
+def connected_components(img):
+    r"""
+    Detect connected components in an image
+    :param img: image in which to detect connected components
+    :return: stack with the coordinates of the detected cracks
+    """
+
+    height, width = img.shape
+
+    value_found = 1
+    crack_lenght = 20
+
+    visited = np.zeros((height, width), dtype=bool)
+
+    tmp_stack = []
+    coordinates_result_cracks = []
+    coordinates_current_component = []
+
+    # Depth-first search (DFS)
+    for i in range(0, height):
+        for j in range(0, width):
+            lenght_components = 0
+
+            if visited[i, j]:  # If i have already visited it, continue
+                continue
+
+            elif img[i, j] == 0:
+                visited[i, j] = True  # I mark it as visited
+
+            else:
+                visited[i, j] = True
+                tmp_stack.append((i, j))
+
+                while len(tmp_stack) != 0:
+
+                    x, y = tmp_stack.pop()
+
+                    lenght_components += 1
+                    coordinates_current_component.append((x, y))
+
+                    if x - 1 >= 0 and y - 1 >= 0:
+                        p1 = img[x - 1, y - 1]
+                        if p1 >= value_found and not visited[x - 1, y - 1]:
+                            tmp_stack.append((x - 1, y - 1))
+                            visited[x - 1, y - 1] = True
+
+                    if x - 1 >= 0:
+                        p2 = img[x - 1, y]
+                        if p2 >= value_found and not visited[x - 1, y]:
+                            tmp_stack.append((x - 1, y))
+                            visited[x - 1, y] = True
+
+                    if x - 1 >= 0 and y + 1 < width:
+                        p3 = img[x - 1, y + 1]
+                        if p3 >= value_found and not visited[x - 1, y + 1]:
+                            tmp_stack.append((x - 1, y + 1))
+                            visited[x - 1, y + 1] = True
+
+                    if y - 1 >= 0:
+                        p4 = img[x, y - 1]
+                        if p4 >= value_found and not visited[x, y - 1]:
+                            tmp_stack.append((x, y - 1))
+                            visited[x, y - 1] = True
+
+                    if y + 1 < width:
+                        p5 = img[x, y + 1]
+                        if p5 >= value_found and not visited[x, y + 1]:
+                            tmp_stack.append((x, y + 1))
+                            visited[x, y + 1] = True
+
+                    if x + 1 < height and y - 1 >= 0:
+                        p6 = img[x + 1, y - 1]
+                        if p6 >= value_found and not visited[x + 1, y - 1]:
+                            tmp_stack.append((x + 1, y - 1))
+                            visited[x + 1, y - 1] = True
+
+                    if x + 1 < height:
+                        p7 = img[x + 1, y]
+                        if p7 >= value_found and not visited[x + 1, y]:
+                            tmp_stack.append((x + 1, y))
+                            visited[x + 1, y] = True
+
+                    if x + 1 < height and y + 1 < width:
+                        p8 = img[x + 1, y + 1]
+                        if p8 >= value_found and not visited[x + 1, y + 1]:
+                            tmp_stack.append((x + 1, y + 1))
+                            visited[x + 1, y + 1] = True
+
+                if lenght_components >= crack_lenght:
+                    # Crack cetected
+                    coordinates_result_cracks.append(coordinates_current_component.copy())
+
+                coordinates_current_component.clear()
+
+    return coordinates_result_cracks
