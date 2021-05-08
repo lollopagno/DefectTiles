@@ -4,6 +4,7 @@ class SettingsFilterEntry(Frame):
     r"""
     Class Setting Filters
     """
+
     def __init__(self, parent):
         super().__init__(parent)
         self.pack(fill=X)

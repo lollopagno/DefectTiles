@@ -14,11 +14,11 @@ def detect(img_original, img_edge):
     Detects cracks in the image
     :param img_original: original image in which to draw the defects
     :param img_edge: binary image that contains the edges
-    :return: original image with cracks detected, binary image with cracks detected
+    :return: original orignal image with cracks detected, binary image with cracks detected
     """
 
     cracks = utility.connected_components(img_edge / 255)
-    cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
+    img_cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
     mean_original_img = cv.mean(img_original)[0]
 
@@ -37,12 +37,12 @@ def detect(img_original, img_edge):
 
             if avg_luminance_area_contour < mean_original_img:
                 contours_crack = np.array(contours_crack).astype(np.int32)
-                cv.drawContours(cracks_detect, [contours_crack], -1, WHITE, -1)
+                cv.drawContours(img_cracks_detect, [contours_crack], -1, WHITE, -1)
 
         # Find for the contours of the identified cracks
-        contours_crack, _ = cv.findContours(cracks_detect.copy().astype(np.uint8), cv.RETR_EXTERNAL,
+        contours_crack, _ = cv.findContours(img_cracks_detect.copy().astype(np.uint8), cv.RETR_EXTERNAL,
                                             cv.CHAIN_APPROX_NONE)
-        cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
+        img_cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
         for cnt in contours_crack:
 
@@ -50,8 +50,8 @@ def detect(img_original, img_edge):
             if area < 20:
                 continue
 
-            if utility.calculate_circolarity(cnt, area, CRACKS):
-                cv.drawContours(cracks_detect, [cnt], -1, WHITE, -1)
+            if utility.calc_geometric_descriptors(cnt, area, CRACKS):
+                cv.drawContours(img_cracks_detect, [cnt], -1, WHITE, -1)
                 cv.polylines(img_original, cnt, -1, GREEN, 2)
 
-    return img_original, cracks_detect.astype(np.uint8)
+    return img_original, img_cracks_detect.astype(np.uint8)

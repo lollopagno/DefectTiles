@@ -3,6 +3,7 @@ from tkinter.ttk import Button
 from Preprocessing import pre_processing as preprocess
 from Defect import crack_defect as crack
 from Defect import blob_defect as blob
+from Defect import common as utility
 import cv2 as cv
 import numpy as np
 import os
@@ -20,6 +21,7 @@ def open_file_name():
     Select the image from a folder
     :return: selected image
     """
+
     filename = filedialog.askopenfilename(title='Upload image')
     return filename
 
@@ -53,6 +55,7 @@ class ButtonEntry(Frame):
         Check the current state of the checkbox filters.
         :return: filter chosen by the user
         """
+
         self.messageLabel.disabled()
 
         # Check state check box filter
@@ -61,15 +64,17 @@ class ButtonEntry(Frame):
                 gaussian and bilateral) or (not median and not gaussian and not bilateral):
             self.messageLabel.enabled("Specify the filter to apply: median, gaussian or bilateral!", 40, "red")
             raise Exception("Error filter!")
+
         elif median:
             filter = "Median"
+
         elif gaussian:
             filter = "Gaussian"
+
         else:
             filter = "Bilateral"
 
         self.messageLabel.disabled()
-
 
         # Check if image is loaded
         if self.path is None:
@@ -84,7 +89,9 @@ class ButtonEntry(Frame):
         r"""
         Open the image after press buttton upload
         """
+
         path_img = open_file_name()
+
         if path_img != "":
             self.path = path_img
             self.messageLabel.disabled()
@@ -94,6 +101,7 @@ class ButtonEntry(Frame):
         r"""
         Start detect
         """
+
         try:
 
             if not os.path.isdir("Resources/Histogram"):
@@ -108,7 +116,7 @@ class ButtonEntry(Frame):
 
                 # Compute histograms and save them.
                 file_name = self.path.split("/")[-1]
-                preprocess.histogram(img, file_name)
+                utility.histogram(img, file_name)
                 histogram = cv.imread(PATH_HISTOGRAM + file_name)
 
                 # Pre processing
@@ -118,6 +126,7 @@ class ButtonEntry(Frame):
                 img_crack_original, img_detected_cracks = crack.detect(img_original=img.copy(),
                                                                        img_edge=binary_edge_cracks)
 
+                # Subtraction of detected defects
                 binary_edge_blob = cv.subtract(binary_edge_cracks, img_detected_cracks, cv.CV_8U)
 
                 # Blob Detect
@@ -126,6 +135,7 @@ class ButtonEntry(Frame):
                 cv.destroyWindow('Original')
                 cv.destroyWindow('Histogram')
 
+                # Sow result
                 if img.shape[1] >= 300:
                     imgStack = stackImages(SCALE, (
                         [draw_description(resize_image(img), "Original image"),
@@ -171,10 +181,10 @@ def resize_image(img):
     r"""
     Resizes the image
     :param img: image to resize
-    :return: image PIL to be resized
+    :return: image to be resized
     """
 
-    height, width = get_shape(img)
+    height, width = utility.get_shape(img)
 
     if height > RESIZE_HEIGHT_IMAGE:
         height = RESIZE_HEIGHT_IMAGE
@@ -188,14 +198,14 @@ def draw_description(img, text):
     r"""
     Draw description image
     :param text: image description
-    :param img: img in which to insert the descrition
-    :return: img with description
+    :param img: image in which to insert the descrition
+    :return: image with description
     """
 
     bottom = int(0.08 * img.shape[0])
     img = cv.copyMakeBorder(img, 0, bottom, 0, 0, cv.BORDER_CONSTANT, None, (255, 255, 255))
 
-    height, _ = get_shape(img)
+    height, _ = utility.get_shape(img)
     cv.putText(img, text, (0, height - 5), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
     return img
 
@@ -208,6 +218,7 @@ def stackImages(scale, imgArray):
     :param imgArray: array of images
     :return: array of images to show
     """
+
     rows = len(imgArray)
     cols = len(imgArray[0])
 
@@ -251,18 +262,3 @@ def stackImages(scale, imgArray):
         ver = hor
 
     return ver
-
-
-def get_shape(img):
-    r"""
-    Gets the shape of the image based on the number of channels
-    :param img: img to get shape
-    :return: height, width of the image
-    """
-
-    try:
-        height, width, _ = img.shape
-    except:
-        height, width = img.shape
-
-    return height, width
