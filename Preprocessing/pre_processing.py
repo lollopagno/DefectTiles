@@ -46,7 +46,7 @@ def start(img_original, filter):
     else:
         img_filt = cv.bilateralFilter(img_norm, 3, 75, 75)
 
-    img_denoised = cv.fastNlMeansDenoising(img_filt, 10, 10, 7, 21)
+    img_denoised = cv.fastNlMeansDenoising(img_filt, 10, 8, 7, 21)
 
     # Edge Detection
     img_edge = cv.Canny(img_denoised, 50, 150)
