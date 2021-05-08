@@ -27,6 +27,7 @@ def detect(img_original, img_edge):
 
             intensity_pixels = []
             contours_crack = []
+
             for _ in range(0, len(crack)):
                 x, y = crack.pop()
                 contours_crack.append([y, x])

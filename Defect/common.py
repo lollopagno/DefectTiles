@@ -49,12 +49,12 @@ def connected_components(img):
     height, width = img.shape
 
     value_found = 1
-    crack_lenght = 20
+    defect_lenght = 20
 
     visited = np.zeros((height, width), dtype=bool)
 
     tmp_stack = []
-    coordinates_result_cracks = []
+    coordinates_result_defect = []
     coordinates_current_component = []
 
     # Depth-first search (DFS)
@@ -127,10 +127,10 @@ def connected_components(img):
                             tmp_stack.append((x + 1, y + 1))
                             visited[x + 1, y + 1] = True
 
-                if lenght_components >= crack_lenght:
-                    # Crack cetected
-                    coordinates_result_cracks.append(coordinates_current_component.copy())
+                if lenght_components >= defect_lenght:
+                    # Degect cetected
+                    coordinates_result_defect.append(coordinates_current_component.copy())
 
                 coordinates_current_component.clear()
 
-    return coordinates_result_cracks
+    return coordinates_result_defect
