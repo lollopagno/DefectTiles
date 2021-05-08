@@ -20,7 +20,7 @@ def detect(img_original, img_edge):
     cracks = utility.connected_components(img_edge / 255)
     img_cracks_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
-    mean_original_img = cv.mean(img_original)[0]
+    mean_original_img = round(cv.mean(img_original)[0])
 
     if len(cracks) != 0:
         for crack in cracks:
@@ -33,9 +33,9 @@ def detect(img_original, img_edge):
                 contours_crack.append([y, x])
                 intensity_pixels.append(img_original[x, y][0])
 
-            avg_luminance_area_contour = np.mean(intensity_pixels)
+            avg_luminance_area_contour = round(float(np.mean(intensity_pixels)))
 
-            if avg_luminance_area_contour < mean_original_img:
+            if avg_luminance_area_contour <= mean_original_img:
                 contours_crack = np.array(contours_crack).astype(np.int32)
                 cv.drawContours(img_cracks_detect, [contours_crack], -1, WHITE, -1)
 

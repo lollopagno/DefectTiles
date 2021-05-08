@@ -19,7 +19,7 @@ def detect(img_original, img_edge):
     blobs = utility.connected_components(img_edge / 255)
     img_blobs_detect = np.zeros(img_edge.shape[:2], dtype=np.float64)
 
-    mean_original_img = cv.mean(img_original)[0]
+    mean_original_img = round(cv.mean(img_original)[0])
 
     if len(blobs) != 0:
         for blob in blobs:
@@ -32,9 +32,9 @@ def detect(img_original, img_edge):
                 contours_blob.append([y, x])
                 intensity_pixels.append(img_original[x, y][0])
 
-            avg_luminance_area_contour = np.mean(intensity_pixels)
+            avg_luminance_area_contour = round(float(np.mean(intensity_pixels)))
 
-            if avg_luminance_area_contour < mean_original_img:
+            if avg_luminance_area_contour <= mean_original_img:
                 contours_blob = np.array(contours_blob).astype(np.int32)
                 cv.drawContours(img_blobs_detect, [contours_blob], -1, WHITE, -1)
 
