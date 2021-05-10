@@ -27,19 +27,6 @@ class FilterEntry(Frame):
         label.pack(side=LEFT, padx=12)
 
 
-class EdgeDetectionEntry(Frame):
-    r"""
-    Class Edge detection Label
-    """
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.pack(fill=X)
-
-        label = Label(self, text="Edge detection:", width=14, font=('Arial', 13, "underline"))
-        label.pack(side=LEFT, padx=12)
-
-
 class ErrorEntry(Frame):
     r"""
     Class Error Label
