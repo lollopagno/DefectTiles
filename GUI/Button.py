@@ -141,8 +141,8 @@ class ButtonEntry(Frame):
                         [draw_description(resize_image(img), "Original image"),
                          draw_description(img_crack_original, "Crack detect"),
                          draw_description(img_blob, "Blob detect")],
-                        [histogram, draw_description(binary_edge_cracks, "Edge cracks"),
-                         draw_description(binary_edge_blob, "Edge blobs")]))
+                        [histogram, draw_description(binary_edge_cracks, "Binary cracks"),
+                         draw_description(binary_edge_blob, "Binary blobs")]))
 
                     cv.imshow("Result detect", imgStack)
 
@@ -150,8 +150,8 @@ class ButtonEntry(Frame):
                     imgStackDetect = stackImages(SCALE, (
                         [draw_description(img_crack_original, "Crack detect"),
                          draw_description(img_blob, "Blob detect")],
-                        [draw_description(binary_edge_cracks, "Edge cracks"),
-                         draw_description(binary_edge_blob, "Edge blobs")]))
+                        [draw_description(binary_edge_cracks, "Binary cracks"),
+                         draw_description(binary_edge_blob, "Binary blobs")]))
 
                     cv.imshow("Original", img)
                     cv.imshow("Histogram", histogram)
