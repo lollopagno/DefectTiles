@@ -58,13 +58,11 @@ class ButtonEntry(Frame):
         :return: filter chosen by the user
         """
 
-        self.messageLabel.disabled()
-
         # Check state check box filter
         median, gaussian, bilateral = self.stateCheckBoxFilter.get_state()
         if (median and gaussian and bilateral) or (median and gaussian) or (median and bilateral) or (
                 gaussian and bilateral) or (not median and not gaussian and not bilateral):
-            self.messageLabel.update_time("Specify the filter to apply: median, gaussian or bilateral!", "red")
+            self.messageLabel.update_params_label("Specify the filter to apply: median, gaussian or bilateral!", "red")
             raise Exception("Error filter!")
 
         elif median:
@@ -76,14 +74,10 @@ class ButtonEntry(Frame):
         else:
             filter = "Bilateral"
 
-        self.messageLabel.disabled()
-
         # Check if image is loaded
         if self.path is None:
-            self.messageLabel.update_time("Upload an image!", "red")
+            self.messageLabel.update_params_label("Upload an image!", "red")
             raise Exception("Error upload image!")
-
-        self.messageLabel.disabled()
 
         return filter
 
@@ -96,8 +90,7 @@ class ButtonEntry(Frame):
 
         if path_img != "":
             self.path = path_img
-            self.messageLabel.disabled()
-            self.messageLabel.update_time("Image loaded successfully!", "blue")
+            self.messageLabel.update_params_label("Image loaded successfully!", "blue")
 
     def start_detect(self):
         r"""
@@ -112,7 +105,6 @@ class ButtonEntry(Frame):
 
             filter = self.check_state_checkbox()
             if self.path is not None:
-                self.messageLabel.disabled()
 
                 # *** START TIME ***
                 start_time = time.time()

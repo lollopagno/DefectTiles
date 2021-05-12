@@ -56,18 +56,11 @@ class ErrorEntry(Frame):
         self.pack(fill=X)
         self.label = Label(self, text="", width=0, fg="red", font=('Arial', 11))
 
-    def enabled(self, text, color):
+    def update_params_label(self, text, color):
         r"""
-        Show the error label
+        Updated params label
         :param text: text to show
-        :param width: with of the label
         :param color: color of the text
         """
-        self.label = Label(self, text=text, width=40, fg=color, font=('Arial', 11))
+        self.label.config(text=text, width=40, fg=color, font=('Arial', 11))
         self.label.pack(side=LEFT, padx=20, pady=10)
-
-    def disabled(self):
-        r"""
-        Hide the error label
-        """
-        self.label.pack_forget()
