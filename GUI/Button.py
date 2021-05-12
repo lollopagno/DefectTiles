@@ -7,6 +7,7 @@ from Defect import common as utility
 import cv2 as cv
 import numpy as np
 import os
+import time
 
 SCALE = 1
 RESIZE_HEIGHT_IMAGE = 400
@@ -38,6 +39,7 @@ class ButtonEntry(Frame):
         self.stateCheckBoxFilter = None
         self.stateCheckBoxDetection = None
         self.messageLabel = None
+        self.timeLabel = None
 
         self.path = None
 
@@ -62,7 +64,7 @@ class ButtonEntry(Frame):
         median, gaussian, bilateral = self.stateCheckBoxFilter.get_state()
         if (median and gaussian and bilateral) or (median and gaussian) or (median and bilateral) or (
                 gaussian and bilateral) or (not median and not gaussian and not bilateral):
-            self.messageLabel.enabled("Specify the filter to apply: median, gaussian or bilateral!", 40, "red")
+            self.messageLabel.update_time("Specify the filter to apply: median, gaussian or bilateral!", "red")
             raise Exception("Error filter!")
 
         elif median:
@@ -78,7 +80,7 @@ class ButtonEntry(Frame):
 
         # Check if image is loaded
         if self.path is None:
-            self.messageLabel.enabled("Upload an image!", 12, "red")
+            self.messageLabel.update_time("Upload an image!", "red")
             raise Exception("Error upload image!")
 
         self.messageLabel.disabled()
@@ -95,7 +97,7 @@ class ButtonEntry(Frame):
         if path_img != "":
             self.path = path_img
             self.messageLabel.disabled()
-            self.messageLabel.enabled("Image loaded successfully!", 20, "blue")
+            self.messageLabel.update_time("Image loaded successfully!", "blue")
 
     def start_detect(self):
         r"""
@@ -111,6 +113,9 @@ class ButtonEntry(Frame):
             filter = self.check_state_checkbox()
             if self.path is not None:
                 self.messageLabel.disabled()
+
+                # *** START TIME ***
+                start_time = time.time()
 
                 img = cv.imread(self.path)
 
@@ -131,6 +136,10 @@ class ButtonEntry(Frame):
 
                 # Blob Detect
                 img_blob = blob.detect(img.copy(), binary_edge_blob)
+
+                # *** END TIME ***
+                end_time = time.time()
+                self.timeLabel.update_time(round(end_time - start_time, 3))
 
                 cv.destroyWindow('Original')
                 cv.destroyWindow('Histogram')
@@ -161,7 +170,6 @@ class ButtonEntry(Frame):
         except Exception as e:
             print(e)
 
-
     def set_state_checkbox_filter(self, state):
         r"""
         Set the state of the checkbox filter
@@ -175,6 +183,13 @@ class ButtonEntry(Frame):
         :param obj: message label object
         """
         self.messageLabel = obj
+
+    def set_time_label(self, obj):
+        r"""
+        Set object time label
+        :param obj: time label object
+        """
+        self.timeLabel = obj
 
 
 def resize_image(img):
