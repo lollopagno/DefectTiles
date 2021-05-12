@@ -31,7 +31,7 @@ def start(img_original, filter):
         img_norm = cv.normalize(img, None, alpha=0, beta=255, norm_type=cv.NORM_MINMAX)
     else:
         img_norm = cv.normalize(img, None, alpha=0, beta=170,
-                                norm_type=cv.NORM_MINMAX)  # TODO Variare beta: prima era a 120
+                                norm_type=cv.NORM_MINMAX)
 
     # Applying the filter (noise reduction)
     # Median
