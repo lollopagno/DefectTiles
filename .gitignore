@@ -1,6 +1,10 @@
 *.idea
 *.pyc
+
+# Resources file
+*Resources/Histogram
+data
 *.ods
 
-*Resources/Histogram
-*.ods#
+# PyTorch
+*runs
