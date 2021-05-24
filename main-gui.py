@@ -30,15 +30,15 @@ class App(Tk):
         buttons = Button.ButtonEntry(frame)  # Button: upload, exit
 
         Label.FilterEntry(frame)  # Label filter
-        settingFilter = Settings.SettingsFilterEntry(frame)  # Checkbox filter
+        setting_Filter = Settings.SettingsFilterEntry(frame)  # Checkbox filter
 
-        timeLabel = Label.TimeEntry(frame)  # Time information
+        time_label = Label.TimeEntry(frame)  # Time information
 
-        msgLabel = Label.ErrorEntry(frame)  # Label information
+        msg_label = Label.ErrorEntry(frame)  # Label information
 
-        buttons.set_time_label(timeLabel)
-        buttons.set_message_label(msgLabel)
-        buttons.set_state_checkbox_filter(settingFilter)
+        buttons.set_time_label(time_label)
+        buttons.set_message_label(msg_label)
+        buttons.set_state_checkbox_filter(setting_Filter)
 
 
 if __name__ == "__main__":
