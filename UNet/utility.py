@@ -1,11 +1,11 @@
 import torch.nn as nn
 
 
-def convolutional_layers(in_channel: int,
-                         out_channel: int,
-                         kernel_size: tuple = (3, 3),
-                         strides: tuple = (1, 1),
-                         padding: tuple = (1, 1)):
+def get_convolutional_layers(in_channel: int,
+                             out_channel: int,
+                             kernel_size: tuple = (3, 3),
+                             strides: tuple = (1, 1),
+                             padding: tuple = (1, 1)):
     r"""
 
     :param in_channel:
@@ -20,7 +20,7 @@ def convolutional_layers(in_channel: int,
                      padding=padding)
 
 
-def activation_function():
+def get_relu():
     r"""
 
     :return:
@@ -28,8 +28,15 @@ def activation_function():
     return nn.ReLU(inplace=True)
 
 
-def pooling(kernel_size: tuple = (2, 2),
-            strides: tuple = (2, 2)):
+def get_sigmoid():
+    r"""
+
+    """
+    return nn.Sigmoid()
+
+
+def get_max_pooling(kernel_size: tuple = (2, 2),
+                    strides: tuple = (2, 2)):
     r"""
 
     :param kernel_size:
@@ -39,12 +46,10 @@ def pooling(kernel_size: tuple = (2, 2),
     return nn.MaxPool2d(kernel_size=kernel_size, stride=strides)
 
 
-def up_layers(size: tuple = (2, 2),
-              up_mode: str = "same"):
+def get_up_sample(size: tuple = (2, 2)):
     r"""
 
     :param size:
-    :param up_mode:
     :return:
     """
-    return nn.Upsample(size=size, mode=up_mode)
+    return nn.Upsample(size=size)
