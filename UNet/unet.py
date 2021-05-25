@@ -1,6 +1,6 @@
+import torch
 import torch.nn as nn
 from UNet import block_net as Block
-from UNet.utility import pooling
 
 
 # TODO Dubbi:
@@ -13,7 +13,7 @@ class Unet(nn.Module):
     """
 
     def __init__(self,
-                 block_filter_count=[0, 64, 128, 256, 512, 1024]):
+                 block_filter_count: list[int] = [1, 64, 128, 256, 512, 1024]):
         r"""
         # TODO documentation
         :param block_filter_count:
@@ -24,28 +24,34 @@ class Unet(nn.Module):
         self.blocks_up = []
 
         # Down sampling path
+        print("** Block downs **")
         for i in range(0, 4):
-            block = Block.Down(in_channel = block_filter_count[i], out_channel = block_filter_count[i + 1])
+            block = Block.Down(in_channel=block_filter_count[i], out_channel=block_filter_count[i + 1])
+            print(f"Block down {i + 1}-layer: in: {block_filter_count[i]}, out: {block_filter_count[i + 1]}")
             self.blocks_down.append(block)
 
         # Bottleneck
-        self.bottleneck = Block.Bottlneck(in_channel=block_filter_count[3], out_channel=block_filter_count[4])
+        print("\n** Bottleneck **")
+        self.bottleneck = Block.Bottleneck(in_channel=block_filter_count[4], out_channel=block_filter_count[5])
+        print(f"Bottleneck layer: in: {block_filter_count[4]}, out: {block_filter_count[5]}")
 
         # Up sampling path
-        # self.upblock_1 = conv_block_transpose(block_filter_count[4], block_filter_count[3])
-        # self.upblock_2 = conv_block_transpose(block_filter_count[3], block_filter_count[2])
-        # self.upblock_3 = conv_block_transpose(block_filter_count[2], block_filter_count[1])
-        # self.upblock_4 = conv_block_transpose(block_filter_count[1], block_filter_count[0])
+        print("\n** Block ups **")
+        for i in range(0, 4):
+            block = Block.Up(in_channel=block_filter_count[5 - i], out_channel=block_filter_count[5 - (i + 1)])
+            print(f"Block ups {i + 1}-layer: in: {block_filter_count[5 - i]}, out: {block_filter_count[5 - (i + 1)]}")
+            self.blocks_up.append(block)
 
-        self.maxpool = pooling()
+        # Output net
+        print("\n** Out net **")
+        self.out = Block.Out(in_channel=block_filter_count[1], out_channel=1, kernel_size=(1, 1))
+        print(f"Out layer: in: {block_filter_count[1]}, out: {1}\n")
 
-        # Outuput rete
-        # self.out = nn.Sequential(
-        #     nn.Conv2d(in_channels=block_filter_count[0], out_channels=1, kernel_size=(1, 1)),
-        #     nn.Sigmoid()
-        # )
+        self.blocks_down = nn.ModuleList(self.blocks_down)
+        self.bottleneck = nn.ModuleList([self.bottleneck])
+        self.blocks_up = nn.ModuleList(self.blocks_up)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor):
         r"""
         # TODO documentation
         :param x:
@@ -53,41 +59,28 @@ class Unet(nn.Module):
         """
 
         encoder = []
-        decoder = []
 
         # Down sampling path
         for block in self.blocks_down:
-            conv = block(x)
-            pool = self.maxpool(conv)
+            out_conv, out_pool = block(x)
 
-            encoder.append(conv)
-            x = pool
+            encoder.append(out_conv)
+            x = out_pool
+
+        out_down_blocks = x
 
         # Bottleneck
-        bt = self.bottleneck(x)
+        bn = self.bottleneck[0](out_down_blocks)
+
+        x = bn
 
         # Up sampling path
-        # u1 = self.up_sampling(bt)
-        #
-        # print(f"Bt: {bt.size()}, Type: {bt.dtype}")
-        # print(f"U1: {u1.size()}, Type: {u1.dtype}")
-        # print(f"C4: {conv_4.size()}, Type: {conv_4.dtype}")
-        #
-        # u1 = torch.cat((u1, conv_4))
-        # u1 = self.upblock_1(u1)
-        #
-        # u2 = self.up_sampling(u1)
-        # u2 = torch.cat((u2, conv_3))
-        # u2 = self.upblock_2(u2)
-        #
-        # u3 = self.up_sampling(u2)
-        # u3 = torch.cat((u3, conv_2))
-        # u3 = self.upblock_3(u3)
-        #
-        # u4 = self.up_sampling(u3)
-        # u4 = torch.cat((u4, conv_1))
-        # u4 = self.upblock_4(u4)
-        #
-        # output = self.out(u4)
+        for index, block in enumerate(self.blocks_up):
+            print(f"Index: {index}")
+            print(f"Index block down: {len(encoder) - (index + 1)}")
+            x = block(x, encoder[len(encoder) - (index + 1)])
 
-        return bt
+        # Out layer net
+        # out_net = self.out(x)
+
+        return x
