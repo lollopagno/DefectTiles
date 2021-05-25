@@ -3,9 +3,8 @@ import torch
 from torchsummary import summary
 from torch.utils.tensorboard import SummaryWriter
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-model = Unet().to(device)
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = Unet()
 
 total_params = sum(p.numel() for p in model.parameters())
 trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -20,5 +19,5 @@ print("********************************\n\n")
 # writer.add_graph(model, x)
 # writer.close()
 
-summary(model, (1, 512, 512))
+summary(model, (1, 512, 512), device='cpu')
 
