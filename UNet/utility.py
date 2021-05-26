@@ -7,13 +7,12 @@ def get_convolutional_layers(in_channel: int,
                              strides: tuple = (1, 1),
                              padding: tuple = (1, 1)):
     r"""
-
-    :param in_channel:
-    :param out_channel:
-    :param kernel_size:
-    :param strides:
-    :param padding:
-    :return:
+    Convolutional layer.
+    :param in_channel: number of input filters.
+    :param out_channel: number of output filters.
+    :param kernel_size: kernel size.
+    :param strides: stride size.
+    :param padding: padding size.
     """
 
     return nn.Conv2d(in_channels=in_channel, out_channels=out_channel, kernel_size=kernel_size, stride=strides,
@@ -22,15 +21,14 @@ def get_convolutional_layers(in_channel: int,
 
 def get_relu():
     r"""
-
-    :return:
+    Relu activation function.
     """
     return nn.ReLU(inplace=True)
 
 
 def get_sigmoid():
     r"""
-
+    Sigmoid activation function.
     """
     return nn.Sigmoid()
 
@@ -38,18 +36,16 @@ def get_sigmoid():
 def get_max_pooling(kernel_size: tuple = (2, 2),
                     strides: tuple = (2, 2)):
     r"""
-
-    :param kernel_size:
-    :param strides:
-    :return:
+    Max pooling layer.
+    :param kernel_size: kernel size.
+    :param strides: stride size.
     """
     return nn.MaxPool2d(kernel_size=kernel_size, stride=strides)
 
 
-def get_up_sample(size: tuple = (2, 2)):
+def get_up_sample(scale_factor: int = 2):
     r"""
-
-    :param size:
-    :return:
+    Up sample layer.
+    :param scale_factor: scale factor.
     """
-    return nn.Upsample(size=size)
+    return nn.Upsample(scale_factor=scale_factor)

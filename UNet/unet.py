@@ -4,19 +4,20 @@ from UNet import block_net as Block
 
 
 # TODO Dubbi:
-#  1- Dimensioni delle immagini del dataset
-#  2- Preprocessing delle immagini
+#  1- Introdurre batch normalization?
+#  2- Dimensioni delle immagini del dataset
+#  3- Preprocessing delle immagini
 
 class Unet(nn.Module):
     r"""
-    U-net class
+    U-net class.
     """
 
     def __init__(self,
                  block_filter_count: list[int] = [1, 64, 128, 256, 512, 1024]):
         r"""
-        # TODO documentation
-        :param block_filter_count:
+        Builder of the class.
+        :param block_filter_count: number of filters for each convolutional layer.
         """
         super(Unet, self).__init__()
 
@@ -38,11 +39,13 @@ class Unet(nn.Module):
         # Up sampling path
         print("\n** Block ups **")
         for i in range(0, 4):
-            block = Block.Up(in_channel=block_filter_count[5 - i], out_channel=block_filter_count[5 - (i + 1)])
-            print(f"Block ups {i + 1}-layer: in: {block_filter_count[5 - i]}, out: {block_filter_count[5 - (i + 1)]}")
+            block = Block.Up(in_channel=block_filter_count[5 - i] + block_filter_count[5 - (i + 1)],
+                             out_channel=block_filter_count[5 - (i + 1)])
+            print(
+                f"Block ups {i + 1}-layer: in: {block_filter_count[5 - i] + block_filter_count[5 - (i + 1)]}, out: {block_filter_count[5 - (i + 1)]}")
             self.blocks_up.append(block)
 
-        # Output net
+        # Output layer
         print("\n** Out net **")
         self.out = Block.Out(in_channel=block_filter_count[1], out_channel=1, kernel_size=(1, 1))
         print(f"Out layer: in: {block_filter_count[1]}, out: {1}\n")
@@ -53,9 +56,9 @@ class Unet(nn.Module):
 
     def forward(self, x: torch.Tensor):
         r"""
-        # TODO documentation
-        :param x:
-        :return:
+        Forward of the network.
+        :param x: input net.
+        :return: output net.
         """
 
         encoder = []
@@ -71,16 +74,13 @@ class Unet(nn.Module):
 
         # Bottleneck
         bn = self.bottleneck[0](out_down_blocks)
-
         x = bn
 
         # Up sampling path
         for index, block in enumerate(self.blocks_up):
-            print(f"Index: {index}")
-            print(f"Index block down: {len(encoder) - (index + 1)}")
             x = block(x, encoder[len(encoder) - (index + 1)])
 
-        # Out layer net
-        # out_net = self.out(x)
+        # Output layer
+        out_net = self.out(x)
 
-        return x
+        return out_net

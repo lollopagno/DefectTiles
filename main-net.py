@@ -3,21 +3,20 @@ import torch
 from torchsummary import summary
 from torch.utils.tensorboard import SummaryWriter
 
-#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = Unet()
-
-total_params = sum(p.numel() for p in model.parameters())
-trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-
-print(f"Total parameters: {total_params}")
-print(f"Trainable parameters: {trainable_params}")
-print(f"Non-trainable params: {(total_params - trainable_params)}")
-print("********************************\n\n")
+model = model.to(device)
 
 # writer = SummaryWriter("runs/unet_experiment_1")
 # x = torch.randn(1, 3, 224, 224)
 # writer.add_graph(model, x)
 # writer.close()
 
-summary(model, (1, 512, 512), device='cpu')
+x = torch.randn(size = (1, 1, 512, 512), dtype = torch.float32).cuda()
+with torch.no_grad ():
+    out = model (x)
+
+print (f'Out net: {out.shape} ')
+
+summary(model, (1, 512, 512))
 
