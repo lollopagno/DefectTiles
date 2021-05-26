@@ -1,6 +1,6 @@
 import numpy as np
 import cv2 as cv
-from Defect import common as utility
+from Features.Defect import common as utility
 
 RED = np.array([0, 0, 255])
 WHITE = (255, 255, 255)

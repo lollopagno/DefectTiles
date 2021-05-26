@@ -1,9 +1,7 @@
 from tkinter import filedialog, LEFT, X, Frame
 from tkinter.ttk import Button
-from Preprocessing import pre_processing as preprocess
-from Defect import crack_defect as crack
-from Defect import blob_defect as blob
-from Defect import common as utility
+from Features.Preprocessing import pre_processing as preprocess
+from Features.Defect import common as utility, crack_defect as crack, blob_defect as blob
 import cv2 as cv
 import numpy as np
 import os

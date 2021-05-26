@@ -1,6 +1,6 @@
 import numpy as np
 import cv2 as cv
-from Defect import common as utility
+from Features.Defect import common as utility
 
 BLOBS = "Blob"
 WHITE = (255, 255, 255)
