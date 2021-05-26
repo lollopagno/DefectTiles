@@ -2,5 +2,5 @@
 *.pyc
 *.ods
 
-*Resources/Histogram
+Features/Resources/Histogram
 *.ods#
