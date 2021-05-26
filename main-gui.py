@@ -2,9 +2,9 @@ from tkinter import Tk
 from tkinter.ttk import Button, Label
 from tkinter import Frame
 
-from GUI import Label
-from GUI import Button
-from GUI import Settings
+from Features.GUI import Label
+from Features.GUI import Button
+from Features.GUI import Settings
 
 SIZE_WINDOW = "400x300"
 ICON = "Resources/Icon/Icon.ico"
