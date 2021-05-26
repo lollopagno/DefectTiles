@@ -47,7 +47,9 @@ class Unet(nn.Module):
 
         # Output layer
         print("\n** Out net **")
-        self.out = Block.Out(in_channel=block_filter_count[1], out_channel=1, kernel_size=(1, 1))
+
+        self.out = Block.Out(in_channel=block_filter_count[1], out_channel=1, kernel_size=(
+            1, 1))  # TODO la dimensione dell'output è dato dal numero di classi del problema
         print(f"Out layer: in: {block_filter_count[1]}, out: {1}\n")
 
         self.blocks_down = nn.ModuleList(self.blocks_down)

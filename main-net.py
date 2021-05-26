@@ -1,5 +1,7 @@
 from UNet.unet import Unet
 import torch
+import torch.nn as nn
+import torch.optim as optim
 from torchsummary import summary
 from torch.utils.tensorboard import SummaryWriter
 
@@ -19,4 +21,19 @@ with torch.no_grad ():
 print (f'Out net: {out.shape} ')
 
 summary(model, (1, 512, 512))
+
+
+# criterion = nn.NLLLoss()
+# optimizer = optim.Adam(model.parameters(), lr=1e-3)
+#
+# # Training loop
+# for epoch in range(1):
+#     optimizer.zero_grad()
+#
+#     output = model(x)
+#     loss = criterion(output, y)
+#     loss.backward()
+#     optimizer.step()
+#
+#     print('Epoch {}, Loss {}'.format(epoch, loss.item()))
 
