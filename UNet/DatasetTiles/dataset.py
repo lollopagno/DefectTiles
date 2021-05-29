@@ -17,9 +17,13 @@ class DatasetTiles(Dataset):
         Load the dataset.
         :param parent_dir: root folder.
         :param image_dir: directory of the defect.
+
+        Image format:
+            - .jpg: image
+            - .png: binay mask
         """
-        self.image_list = glob.glob(parent_dir + '/' + image_dir + '/Imgs/*')
-        self.image_list.sort()
+        self.img_list_path = glob.glob(parent_dir + '/' + image_dir + '/Imgs/*.jpg')
+        self.img_mask_list_path = glob.glob(parent_dir + '/' + image_dir + '/Imgs/*.png')
         print(f"{image_dir} loaded!")
 
     def __getitem__(self, index):
@@ -28,13 +32,13 @@ class DatasetTiles(Dataset):
         :param index: index of the specific image
         """
 
-        X = preprocessing(self.image_list[index], False)
-        y = preprocessing(self.image_list[index + 1], True)
+        x = preprocessing(self.img_list_path[index], False)
+        y = preprocessing(self.img_mask_list_path[index], True)
 
-        return X, y
+        return x, y
 
     def __len__(self):
-        return len(self.image_list)
+        return len(self.img_list_path)
 
 
 def preprocessing(img, convert_to_gray):
@@ -50,6 +54,8 @@ def preprocessing(img, convert_to_gray):
     else:
         img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
     img = cv.resize(img, (WIDTH, HEIGHT))
+    img = img / 255
+    img = img.astype(np.float32)
 
     return img
 
@@ -66,8 +72,8 @@ def train_test_split(dataset):
     """
     length_dataset = len(dataset)
 
-    length_train = np.int(length_dataset * 0.7)
-    length_validate = np.int(length_dataset * 0.2)
+    length_train = np.int_(length_dataset * 0.7)
+    length_validate = np.int_(length_dataset * 0.2)
 
     training_dataset = Subset(dataset, range(0, length_train))
     validation_dataset = Subset(dataset, range(length_train, length_train + length_validate))
