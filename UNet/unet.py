@@ -14,9 +14,11 @@ class Unet(nn.Module):
     """
 
     def __init__(self,
+                 n_classes: int,
                  block_filter_count: list[int] = [1, 64, 128, 256, 512, 1024]):
         r"""
         Builder of the class.
+        :param n_classes: number of classes of the problem.
         :param block_filter_count: number of filters for each convolutional layer.
         """
         super(Unet, self).__init__()
@@ -48,9 +50,8 @@ class Unet(nn.Module):
         # Output layer
         print("\n** Out net **")
 
-        self.out = Block.Out(in_channel=block_filter_count[1], out_channel=1, kernel_size=(
-            1, 1))  # TODO la dimensione dell'output è dato dal numero di classi del problema
-        print(f"Out layer: in: {block_filter_count[1]}, out: {1}\n")
+        self.out = Block.Out(in_channel=block_filter_count[1], out_channel=n_classes, kernel_size=(1, 1))
+        print(f"Out layer: in: {block_filter_count[1]}, out: {n_classes}\n")
 
         self.blocks_down = nn.ModuleList(self.blocks_down)
         self.bottleneck = nn.ModuleList([self.bottleneck])
