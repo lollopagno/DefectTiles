@@ -1,12 +1,16 @@
 from UNet.unet import Unet
 from UNet.DatasetTiles.dataset import DatasetTiles, train_test_split
-from UNet.metric import accuracy
+from UNet.training import training_loop
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import ConcatDataset, DataLoader
+import matplotlib.pyplot as plt
+import numpy as np
 from torchsummary import summary
 import cv2 as cv
+
+SHOW_SAMPLES_TRAIN = False
 
 parent_dir = "UNet/DatasetTiles"
 BLOWHOLE = "MT_Blowhole"
@@ -39,30 +43,28 @@ batch_size = 8
 # Training set
 training_loader = DataLoader(training_dataset, batch_size=batch_size, shuffle=False)
 
-# Show samples train dataset
-# import matplotlib.pyplot as plt
-# import numpy as np
-#
-# for test_images, test_labels in training_loader:
-#     sample_image = test_images[2]   # Reshape them according to your needs.
-#     sampl1e_label = test_labels[2]
-#
-#     img = np.squeeze(sample_image)
-#     plt.title('Image')
-#     plt.imshow(img)
-#     plt.show()
-#
-#     label = np.squeeze(sampl1e_label)
-#     plt.title('Label')
-#     plt.imshow(label)
-#     plt.show()
-#     break
-
 # Validation set
 validation_loader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
 
 # Test set
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+# Show samples train dataset
+if SHOW_SAMPLES_TRAIN:
+    for test_images, test_labels in training_loader:
+        sample_image = test_images[2]
+        sample_label = test_labels[2]
+
+        img = np.squeeze(sample_image)
+        plt.title('Image')
+        plt.imshow(img)
+        plt.show()
+
+        label = np.squeeze(sample_label)
+        plt.title('Label')
+        plt.imshow(label)
+        plt.show()
+        break
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = Unet(n_classes=n_classes)
@@ -76,18 +78,14 @@ model = model.to(device)
 #
 # summary(model, (1, 512, 512))
 
-# TODO Iteration for epoch = ??
-num_epochs = 0  # 100
+num_epochs = 100
 criterion = nn.BCELoss()  # Binary cross-entropy
 optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=0.0001)
 
-# Training loop
-# for epoch in range(num_epochs):
-#     optimizer.zero_grad()
-#
-#     output = model(x)
-#     loss = criterion(output, y)
-#     loss.backward()
-#     optimizer.step()
-#
-#     print('Epoch {}, Loss {}'.format(epoch, loss.item()))
+# TODO added patience??
+
+# Training model
+# training_loop()
+
+
+# TODO show results
