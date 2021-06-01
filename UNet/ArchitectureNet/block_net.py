@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from UNet.utility import get_convolutional_layers, \
+from UNet.ArchitectureNet.utility import get_convolutional_layers, \
     get_relu, \
     get_max_pooling, \
     get_sigmoid, \
