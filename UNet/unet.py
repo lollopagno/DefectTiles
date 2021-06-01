@@ -3,11 +3,6 @@ import torch.nn as nn
 from UNet import block_net as Block
 
 
-# TODO Dubbi:
-#  1- Introdurre batch normalization?
-#  2- Dimensioni delle immagini del dataset
-#  3- Preprocessing delle immagini
-
 class Unet(nn.Module):
     r"""
     U-net class.
