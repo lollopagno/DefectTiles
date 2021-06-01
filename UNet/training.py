@@ -60,6 +60,8 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             # Split the train data from the labels
             X = batch[0].to(device)
             y = batch[1].to(device)
+
+            #y = y.unsqueeze(3) Add 1 channel to tensor
             y[y > 0] = 1  # TODO check this
 
             # Forward pass
