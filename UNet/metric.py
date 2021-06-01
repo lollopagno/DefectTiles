@@ -28,3 +28,6 @@ def accuracy(prediction, ground_truth):
     acc = np.divide(true_positive + true_negative, total_prediction) * 100
 
     return acc
+
+# TODO jaccard index
+# from sklearn.metrics import jaccard_score as jsc
