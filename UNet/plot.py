@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 
 def plot_history(loss_train, loss_valid, accuracy_valid, num_epochs):
@@ -30,3 +31,29 @@ def plot_history(loss_train, loss_valid, accuracy_valid, num_epochs):
     plt.ylabel('accuracy')
     plt.gca().legend('accuracy', loc='lower right')
     plt.title('validation accuracy against epoch number')
+
+
+def sample_dataset(dataLoader, batch_size):
+    r"""
+    Shows an example of the training dataset
+    :param dataLoader: dataset
+    :param batch_size: number of batchsize
+    """
+
+    # TODO Improved this, if necessary
+    for test_images, test_labels in dataLoader:
+        random_batch = random.randint(0, batch_size - 1)
+
+        sample_image = test_images[random_batch]
+        sample_label = test_labels[random_batch]
+
+        img = np.squeeze(sample_image)
+        plt.title('Image')
+        plt.imshow(img)
+        plt.show()
+
+        label = np.squeeze(sample_label)
+        plt.title('Label')
+        plt.imshow(label)
+        plt.show()
+        break

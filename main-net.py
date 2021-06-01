@@ -1,18 +1,15 @@
 from UNet.ArchitectureNet.unet import Unet
 from UNet.DatasetTiles.dataset import DatasetTiles, train_test_split
 from UNet.training import training_loop
-from UNet.plot import plot_history
+from UNet.plot import plot_history, sample_dataset
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import ConcatDataset, DataLoader
-import matplotlib.pyplot as plt
-import numpy as np
-import random
 import time
 from torchsummary import summary
 
-SHOW_SAMPLES_TRAIN = True
+SHOW_SAMPLES_TRAIN = False
 SHOW_SUMMARY = False
 
 parent_dir = "UNet/DatasetTiles"
@@ -54,23 +51,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Show samples train dataset
 if SHOW_SAMPLES_TRAIN:
-    # TODO Improved this, if necessary
-    for test_images, test_labels in training_loader:
-        random_batch = random.randint(0, batch_size - 1)
-
-        sample_image = test_images[random_batch]
-        sample_label = test_labels[random_batch]
-
-        img = np.squeeze(sample_image)
-        plt.title('Image')
-        plt.imshow(img)
-        plt.show()
-
-        label = np.squeeze(sample_label)
-        plt.title('Label')
-        plt.imshow(label)
-        plt.show()
-        break
+    sample_dataset(training_loader, batch_size)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = Unet(n_classes=n_classes)
@@ -85,7 +66,7 @@ model = model.to(device)
 if SHOW_SUMMARY:
     summary(model, (1, 512, 512))
 
-num_epochs = 100
+num_epochs = 5 #100
 criterion = nn.BCELoss()  # Binary cross-entropy
 optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=0.0001)
 lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
