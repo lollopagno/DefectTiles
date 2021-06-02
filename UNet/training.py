@@ -42,9 +42,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     early_stopping = EarlyStopping()
 
     for epoch in range(0, num_epochs):
-        print(f"Epoch: {epoch + 1}/{num_epochs}")
-
-        lr_scheduler.step()
+        print(f"--> Epoch: {epoch + 1}/{num_epochs}")
 
         # Training steps
         training_loss_batch = 0.0
@@ -61,7 +59,6 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             X = batch[0].to(device)
             y = batch[1].to(device)
 
-            #y = y.unsqueeze(3) Add 1 channel to tensor
             y[y > 0] = 1  # TODO check this
 
             # Forward pass
@@ -80,11 +77,12 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
 
             num_steps += 1
 
-        training_loss_arr.append(np.divide(training_loss_batch, num_steps))
+        train_loss_for_this_epoch = np.divide(training_loss_batch, num_steps)
+        training_loss_arr.append(train_loss_for_this_epoch)
         training_accuracy_arr.append(np.divide(training_accuracy_batch, num_steps))
 
         # Set loss (training) for each epoch
-        plot_train_loss[epoch] = training_loss_arr
+        plot_train_loss[epoch] = train_loss_for_this_epoch
 
         # Validation
         with torch.no_grad():
@@ -92,15 +90,20 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             model.eval()
 
             # Validation steps
-            validation_loss_batch, validation_accuracy_batch, num_steps = _training_loop(validation_loader, model,
-                                                                                         loss_fn, device)
+            validation_loss_batch, validation_accuracy_batch, num_steps = _training_loop(validation_loader,
+                                                                                         model,
+                                                                                         loss_fn,
+                                                                                         device)
 
-            validation_loss_arr.append(np.divide(validation_loss_batch, num_steps))
-            validation_accuracy_arr.append(np.divide(validation_accuracy_batch, num_steps))
+            valid_loss_for_this_epoch = np.divide(validation_loss_batch, num_steps)
+            valid_accuracy_for_this_epoch = np.divide(validation_accuracy_batch, num_steps)
+
+            validation_loss_arr.append(valid_loss_for_this_epoch)
+            validation_accuracy_arr.append(valid_accuracy_for_this_epoch)
 
             # Set loss and accuracy (validation) for each epoch
-            plot_validate_loss[epoch] = validation_loss_arr
-            plot_validate_accuracy[epoch] = validation_accuracy_arr
+            plot_validate_loss[epoch] = train_loss_for_this_epoch
+            plot_validate_accuracy[epoch] = valid_accuracy_for_this_epoch
 
         if epoch % SHOW_EVERY == 0 or epoch == num_epochs - 1:
             print(f"** Training\n\t\tLoss: {np.round(np.mean(validation_loss_arr), 4)}\n\t\t"
@@ -110,19 +113,13 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
                   f"Accuracy: {np.round(np.mean(training_accuracy_arr), 4)}\n**\n\n")
 
         early_stopping(validation_loss_arr)
-        if early_stopping.early_stop:
-            # Save the model
-            current_date_hour = datetime.datetime.now()
-            new_dir = f"{current_date_hour.year}{current_date_hour.month}{current_date_hour.day}-" \
-                      f"{current_date_hour.hour}{current_date_hour.minute}{current_date_hour.second} "
-            path = os.path.join(PARENT_DIR, new_dir)
-            os.mkdir(path)
-
-            torch.save(model.state_dict(), path + "/")
-            print("Model saved!")
+        if early_stopping.early_stop or epoch == num_epochs - 1:
+            save_model(model)
 
             # Stop training
             break
+
+        lr_scheduler.step()
 
     # Test
     with torch.no_grad():
@@ -130,7 +127,10 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         model.eval()
 
         # Test steps
-        test_loss_batch, test_accuracy_batch, num_steps = _training_loop(test_loader, model, loss_fn, device)
+        test_loss_batch, test_accuracy_batch, num_steps = _training_loop(test_loader,
+                                                                         model,
+                                                                         loss_fn,
+                                                                         device)
 
         test_loss_arr.append(np.divide(test_loss_batch, num_steps))
         test_accuracy_arr.append(np.divide(test_accuracy_batch, num_steps))
@@ -160,11 +160,28 @@ def _training_loop(data_loader, model, loss_fn, device):
         y[y > 0] = 1  # TODO check this
 
         y_predicted = model(X)
-        total_loss = loss_fn(y_predicted, y)
-        total_loss += total_loss.item()
+        loss = loss_fn(y_predicted, y)
+        total_loss += loss.item()
 
         total_accuracy += accuracy(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
 
         num_steps += 1
 
     return total_loss, total_accuracy, num_steps
+
+
+def save_model(model):
+    r"""
+    Save the model.
+    :param model: model to saved.
+    """
+
+    current_date_hour = datetime.datetime.now()
+    new_dir = f"{current_date_hour.year}{current_date_hour.month}{current_date_hour.day}-" \
+              f"{current_date_hour.hour}{current_date_hour.minute}{current_date_hour.second}"
+
+    path = PARENT_DIR + "/" + new_dir
+    os.mkdir(path)
+
+    torch.save(model.state_dict(), PARENT_DIR + "/" + new_dir + "/mode.pth")
+    print("Model saved!")
