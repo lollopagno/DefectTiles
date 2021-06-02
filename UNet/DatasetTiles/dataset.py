@@ -33,7 +33,12 @@ class DatasetTiles(Dataset):
         """
 
         x = preprocessing(self.img_list_path[index], False)
+        # Resize input format [height, width, n_channels]
+        x = np.rollaxis(x, 2, 0)
+
         y = preprocessing(self.img_mask_list_path[index], True)
+        # Add 1 channel to input. Input format [height, width, n_channels]
+        y = np.expand_dims(y, axis=0)
 
         return x, y
 
@@ -49,11 +54,14 @@ def preprocessing(img, convert_to_gray):
     """
 
     img = cv.imread(img)
+    img = cv.resize(img, (WIDTH, HEIGHT))
+
     if convert_to_gray:
         img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+
     else:
         img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-    img = cv.resize(img, (WIDTH, HEIGHT))
+
     img = img / 255
     img = img.astype(np.float32)
 
@@ -62,10 +70,10 @@ def preprocessing(img, convert_to_gray):
 
 def train_test_split(dataset):
     r"""
-    Slip dataset in training, validation and test:
-        - 70% training;
-        - 20% validation:
-        - 10% test.
+    Slip dataset in training, validation and test set:
+        - 70% training set;
+        - 20% validation set:
+        - 10% test set.
 
     :param dataset: dataset to split
     :return : training, validation and test set.
