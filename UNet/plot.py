@@ -19,18 +19,20 @@ def plot_history(loss_train, loss_valid, accuracy_valid, num_epochs):
              linewidth=3, alpha=0.9)
     plt.plot(plot_epoch[0:num_epochs], loss_valid[0:num_epochs], linestyle='-', marker='',
              linewidth=3, alpha=0.9)
-    plt.xlabel('epoch number')
-    plt.ylabel('loss')
-    plt.gca().legend(('training loss', 'validation loss'), loc='upper right')
-    plt.title('losses against epoch number')
+    plt.xlabel('Epoch number')
+    plt.ylabel('Loss')
+    plt.gca().legend(('Training loss', 'Validation loss'), loc='upper right')
+    plt.title('Loss history')
+    plt.show()
 
     plt.figure(2)
     plt.plot(plot_epoch[0:num_epochs], accuracy_valid[0:num_epochs], linestyle='-', marker='',
              linewidth=3, alpha=0.9)
-    plt.xlabel('epoch number')
-    plt.ylabel('accuracy')
-    plt.gca().legend('accuracy', loc='lower right')
-    plt.title('validation accuracy against epoch number')
+    plt.xlabel('Epoch number')
+    plt.ylabel('Accuracy')
+    plt.gca().legend('Accuracy', loc='lower right')
+    plt.title('Accuracy history')
+    plt.show()
 
 
 def sample_dataset(dataLoader, batch_size):
