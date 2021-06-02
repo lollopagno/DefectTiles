@@ -51,10 +51,10 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Show samples train dataset
 if SHOW_SAMPLES_TRAIN:
-    sample_dataset(training_loader, batch_size)
+    sample_dataset(dataLoader=training_loader, batch_size=batch_size)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = Unet(n_classes=n_classes)
+model = Unet(n_classes_out=n_classes)
 model = model.to(device)
 
 # x = torch.randn(size=(1, 1, 512, 512), dtype=torch.float32).cuda()
@@ -66,7 +66,7 @@ model = model.to(device)
 if SHOW_SUMMARY:
     summary(model, (1, 512, 512))
 
-num_epochs = 5 #100
+num_epochs = 5 # 100
 criterion = nn.BCELoss()  # Binary cross-entropy
 optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=0.0001)
 lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
@@ -76,15 +76,18 @@ lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
 start_time = time.time()
 
 # Training model
-loss_train, loss_valid, accuracy_valid = training_loop(model, num_epochs,
-                                                       optimizer,
-                                                       lr_scheduler,
-                                                       criterion,
-                                                       training_loader,
-                                                       validation_loader,
-                                                       test_loader)
+loss_train, loss_valid, accuracy_valid = training_loop(model=model,
+                                                       num_epochs=num_epochs,
+                                                       optimizer=optimizer,
+                                                       lr_scheduler=lr_scheduler,
+                                                       loss_fn=criterion,
+                                                       training_loader=training_loader,
+                                                       validation_loader=validation_loader,
+                                                       test_loader=test_loader)
 end_time = time.time()
 print(f"Training time: {round(((end_time - start_time) / 60), 3)} minutes")
 
 # Show loss and accuracy
-plot_history(loss_train, loss_valid, accuracy_valid, num_epochs)
+plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, num_epochs=num_epochs)
+
+# TODO execute check on the test set
