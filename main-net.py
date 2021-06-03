@@ -71,8 +71,6 @@ criterion = nn.BCELoss()  # Binary cross-entropy
 optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=0.0001)
 lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
 
-# TODO Soglia di binarizzazione
-
 start_time = time.time()
 
 # Training model
