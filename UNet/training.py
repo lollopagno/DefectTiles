@@ -112,9 +112,13 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             print(f"** Validation\n\t\tLoss: {np.round(np.mean(training_loss_arr), 4)}\n\t\t"
                   f"Accuracy: {np.round(np.mean(training_accuracy_arr), 4)}\n**\n\n")
 
+        if epoch % 10 == 0:
+            # Save model each 10 epochs
+            save_model(model, f"model_epoch_{epoch}.pth")
+
         early_stopping(validation_loss_arr)
         if early_stopping.early_stop or epoch == num_epochs - 1:
-            save_model(model)
+            save_model(model, "best_model.pth")
 
             # Stop training
             break
@@ -170,10 +174,11 @@ def _training_loop(data_loader, model, loss_fn, device):
     return total_loss, total_accuracy, num_steps
 
 
-def save_model(model):
+def save_model(model, name_file):
     r"""
     Save the model.
     :param model: model to saved.
+    :param name_file: name file to be saved. (Extension file .pth)
     """
 
     current_date_hour = datetime.datetime.now()
@@ -183,5 +188,5 @@ def save_model(model):
     path = PARENT_DIR + "/" + new_dir
     os.mkdir(path)
 
-    torch.save(model.state_dict(), PARENT_DIR + "/" + new_dir + "/mode.pth")
+    torch.save(model.state_dict(), PARENT_DIR + "/" + new_dir + "/" + name_file)
     print("Model saved!")
