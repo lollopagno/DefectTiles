@@ -29,5 +29,3 @@ def accuracy(prediction, ground_truth):
 
     return acc
 
-# TODO jaccard index
-# from sklearn.metrics import jaccard_score as jsc
