@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-from sklearn.metrics import jaccard_score as jc
 from UNet.metric import accuracy
 from UNet.earlyStopping import EarlyStopping
 import datetime
@@ -32,10 +31,6 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     # Accuracy
     training_accuracy_arr = []
     validation_accuracy_arr = []
-
-    # Jaccard index
-    training_jaccard_arr = []
-    validation_jaccard_arr = []
 
     # Parameters to plot loss and accuracy
     plot_train_loss = np.zeros(num_epochs)
@@ -79,16 +74,11 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             training_accuracy_batch += accuracy(y_predicted.cpu().detach().numpy(),
                                                 y.cpu().detach().numpy())
 
-            print(y.shape)
-            print(y_predicted.shape)
-            training_jaccard_batch += jc(y_true=y.cpu().detach().numpy(), y_pred=y_predicted.cpu().detach().numpy())
-
             num_steps += 1
 
         train_loss_for_this_epoch = np.divide(training_loss_batch, num_steps)
         training_loss_arr.append(train_loss_for_this_epoch)
         training_accuracy_arr.append(np.divide(training_accuracy_batch, num_steps))
-        training_jaccard_arr.append(np.divice(training_jaccard_batch, num_steps))
 
         # Set loss (training) for each epoch
         plot_train_loss[epoch] = train_loss_for_this_epoch
@@ -116,8 +106,6 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
                 validation_loss_batch += loss.item()
 
                 validation_accuracy_batch += accuracy(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
-                validation_jaccard_batch += jc(y_true=y.cpu().detach().numpy(),
-                                               y_pred=y_predicted.cpu().detach().numpy())
 
                 num_steps += 1
 
@@ -126,7 +114,6 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
 
             validation_loss_arr.append(valid_loss_for_this_epoch)
             validation_accuracy_arr.append(valid_accuracy_for_this_epoch)
-            validation_jaccard_arr.append(np.divide(validation_jaccard_batch, num_steps))
 
             # Set loss and accuracy (validation) for each epoch
             plot_validate_loss[epoch] = train_loss_for_this_epoch
@@ -134,23 +121,20 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
 
         if epoch % SHOW_EVERY == 0 or epoch == num_epochs - 1:
             print(f"** Training\n\t\tLoss: {np.round(np.mean(training_loss_arr), 4)}\n\t\t"
-                  f"Accuracy: {np.round(np.mean(training_accuracy_arr), 4)}\n\t\t"
-                  f"Jaccard: {np.round(np.mean(training_jaccard_arr), 4)}**\n\n")
+                  f"Accuracy: {np.round(np.mean(training_accuracy_arr), 4)}\n**\n\n")
 
             print(f"** Validation\n\t\tLoss: {np.round(np.mean(validation_loss_arr), 4)}\n\t\t"
-                  f"Accuracy: {np.round(np.mean(validation_accuracy_arr), 4)}\n\t\t"
-                  f"Jaccard: {np.round(np.mean(validation_jaccard_arr), 4)}**\n\n")
+                  f"Accuracy: {np.round(np.mean(validation_accuracy_arr), 4)}\n**\n\n")
 
         if epoch % 10 == 0:
             # Save model each 10 epochs
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
-                       validation_accuracy_arr, training_jaccard_arr, validation_jaccard_arr,
-                       f"model_epoch_{epoch}.pth")
+                       validation_accuracy_arr, f"model_epoch_{epoch}.pth")
 
         early_stopping(validation_loss_arr)
         if early_stopping.early_stop or epoch == num_epochs - 1:
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
-                       validation_accuracy_arr, training_jaccard_arr, validation_jaccard_arr, "best_model.pth")
+                       validation_accuracy_arr, "best_model.pth")
 
             # Stop training
             break
@@ -206,7 +190,6 @@ def test(test_loader, model, loss_fn):
             test_loss_batch += loss.item()
 
             test_accuracy_batch += accuracy(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
-            test_jaccard_batch += jc(y_true=y.cpu().detach().numpy(), y_pred=y_predicted.cpu().detach().numpy())
 
             num_steps += 1
 
@@ -221,8 +204,7 @@ def test(test_loader, model, loss_fn):
     return plot_img, plot_mask, plot_predicted
 
 
-def save_model(model, epoch, optimizer, training_loss, validation_loss, training_acc, validation_acc, training_jaccard,
-               validation_jaccard, name_file):
+def save_model(model, epoch, optimizer, training_loss, validation_loss, training_acc, validation_acc, name_file):
     r"""
     Save the model.
     :param model: model to saved.
@@ -232,8 +214,6 @@ def save_model(model, epoch, optimizer, training_loss, validation_loss, training
     :param training_acc: training accuracy.
     :param validation_loss: validation loss.
     :param validation_acc: validation accuracy.
-    :param training_jaccard: training jaccard index.
-    :param validation_jaccard: validation jaccard index.
     :param name_file: name file to be saved. (Extension file .pth)
     """
 
@@ -248,12 +228,10 @@ def save_model(model, epoch, optimizer, training_loss, validation_loss, training
         'epoch': epoch,
         'state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict(),
-        'Training Loss': np.round(np.mean(training_loss, 4)),
-        'Validation Loss': np.round(np.mean(validation_loss, 4)),
-        'Training Accuracy': np.round(np.mean(training_acc, 4)),
-        'Validation Accuracy': np.round(np.mean(validation_acc, 4)),
-        'Training Jaccard': np.round(np.mean(training_jaccard, 4)),
-        'Validation Jaccard': np.round(np.mean(validation_jaccard, 4))
+        'Training Loss': np.round(np.mean(training_loss), 4),
+        'Validation Loss': np.round(np.mean(validation_loss), 4),
+        'Training Accuracy': np.round(np.mean(training_acc), 4),
+        'Validation Accuracy': np.round(np.mean(validation_acc), 4)
     }
 
     torch.save(checkpoint, PARENT_DIR + "/" + new_dir + "/" + name_file)
