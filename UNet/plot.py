@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import cv2 as cv
 
 
 def plot_history(loss_train, loss_valid, accuracy_valid, num_epochs):
@@ -99,8 +100,13 @@ def plot_test_results(images, masks, predicted, value):
         mask = mask[0, :, :]
 
         predict = predicted[i]
-        predict = np.squeeze(predict)
-        predict = predict[0, :, :]
+        # TODO eseguire trasformazioni sul tipo della variabile per lavorare sull'immagine
+        # predict = np.squeeze(predict)
+        # predict = predict[0, :, :]
+        # y_pos = predict[0, 1, :, :]
+        # y_neg = predict[0, 0, :, :]
+        # y_test = y_pos >= y_neg
+        y_mask = binary_mask(predict)
 
         # Image
         plt.title(f'Image: {counter}')
@@ -118,3 +124,17 @@ def plot_test_results(images, masks, predicted, value):
         plt.show()
 
         counter += 1
+
+
+def binary_mask(img):
+    r"""
+    Get the mask from the predicted image from the network.
+    :param img: image from which to get the mask.
+    """
+    mask = img.astype('float32')
+    kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (5, 5))
+    mask = cv.dilate(mask, kernel, iterations=2)
+    mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel)
+    mask = cv.morphologyEx(mask, cv.MORPH_OPEN, kernel)
+
+    return mask
