@@ -88,6 +88,7 @@ def plot_test_results(images, masks, predicted, value):
     if value >= len(images):
         raise Exception("The value must be less than the number of images")
 
+    counter = 1
     for i in range(value, len(images)):
         img = images[i]
         img = np.squeeze(img)
@@ -102,16 +103,18 @@ def plot_test_results(images, masks, predicted, value):
         predict = predict[0, :, :]
 
         # Image
-        plt.title(f'Image: {i}')
+        plt.title(f'Image: {counter}')
         plt.imshow(img, cmap="gray")
         plt.show()
 
         # Label
-        plt.title(f'Mask: {i}')
+        plt.title(f'Mask: {counter}')
         plt.imshow(mask, cmap="gray")
         plt.show()
 
         # Predict
-        plt.title(f'Predict: {i}')
+        plt.title(f'Predict: {counter}')
         plt.imshow(predict, cmap="gray")
         plt.show()
+
+        counter += 1
