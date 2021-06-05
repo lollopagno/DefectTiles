@@ -27,10 +27,10 @@ def plot_history(loss_train, loss_valid, accuracy_valid, num_epochs):
 
     plt.figure(2)
     plt.plot(plot_epoch[0:num_epochs], accuracy_valid[0:num_epochs], linestyle='-', marker='',
-             linewidth=3, alpha=0.9)
+             linewidth=3, alpha=0.9, label="Accuracy")
     plt.xlabel('Epoch number')
     plt.ylabel('Accuracy')
-    plt.gca().legend('Accuracy', loc='upper right')
+    plt.gca().legend(loc='upper right')
     plt.title('Accuracy history')
     plt.show()
 
@@ -90,20 +90,28 @@ def plot_test_results(images, masks, predicted, value):
 
     for i in range(value, len(images)):
         img = images[i]
+        img = np.squeeze(img)
+        img = img[0, 0, :]
+
         mask = masks[i]
+        mask = np.squeeze(mask)
+        mask = mask[0, :, :]
+
         predict = predicted[i]
+        predict = np.squeeze(predict)
+        predict = predict[0, :, :]
 
         # Image
-        plt.title('Image')
+        plt.title(f'Image: {i}')
         plt.imshow(img, cmap="gray")
         plt.show()
 
         # Label
-        plt.title('Mask')
+        plt.title(f'Mask: {i}')
         plt.imshow(mask, cmap="gray")
         plt.show()
 
         # Predict
-        plt.title('Predict')
+        plt.title(f'Predict: {i}')
         plt.imshow(predict, cmap="gray")
         plt.show()

@@ -21,7 +21,10 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     :param validation_loader: validation data
     """
 
+    print("\n** Training **\n")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    folder = create_directory()
 
     # Initialized params before training
     # Loss
@@ -46,7 +49,6 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         # Training steps
         training_loss_batch = 0.0
         training_accuracy_batch = 0.0
-        training_jaccard_batch = 0.0
         num_steps = 0
 
         for _, batch in enumerate(training_loader):
@@ -89,7 +91,6 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             num_steps = 0
             validation_loss_batch = 0.0
             validation_accuracy_batch = 0.0
-            validation_jaccard_batch = 0.0
 
             model.eval()
 
@@ -129,12 +130,12 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         if epoch % 10 == 0:
             # Save model each 10 epochs
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
-                       validation_accuracy_arr, f"model_epoch_{epoch}.pth")
+                       validation_accuracy_arr, folder, f"model_epoch_{epoch + 1}.pth")
 
         early_stopping(validation_loss_arr)
         if early_stopping.early_stop or epoch == num_epochs - 1:
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
-                       validation_accuracy_arr, "best_model.pth")
+                       validation_accuracy_arr, folder, "best_model.pth")
 
             # Stop training
             break
@@ -156,7 +157,6 @@ def test(test_loader, model, loss_fn):
 
     test_loss_arr = []
     test_accuracy_arr = []
-    test_jaccard_arr = []
 
     # Parameters to plot the results
     plot_img = []
@@ -170,7 +170,6 @@ def test(test_loader, model, loss_fn):
         # Test steps
         test_loss_batch = 0.0
         test_accuracy_batch = 0.0
-        test_jaccard_batch = 0.0
         num_steps = 0
 
         for index, batch in enumerate(test_loader):
@@ -182,8 +181,8 @@ def test(test_loader, model, loss_fn):
 
             y_predicted = model(X)
 
-            plot_img.append(X)
-            plot_mask.append(y)
+            plot_img.append(X.cpu().detach().numpy())
+            plot_mask.append(y.cpu().detach().numpy())
             plot_predicted.append(y_predicted.cpu().detach().numpy())
 
             loss = loss_fn(y_predicted, y)
@@ -195,16 +194,15 @@ def test(test_loader, model, loss_fn):
 
         test_loss_arr.append(np.divide(test_loss_batch, num_steps))
         test_accuracy_arr.append(np.divide(test_accuracy_batch, num_steps))
-        test_jaccard_arr.append(np.divide(test_jaccard_batch, num_steps))
 
         print(f"** Test\n\t\tLoss: {np.round(np.mean(test_loss_arr), 4)}\n\t\t"
-              f"Accuracy: {np.round(np.mean(test_accuracy_arr), 4)}\n\t\t"
-              f"Jaccard: {np.round(np.mean(test_jaccard_arr), 4)}**\n\n")
+              f"Accuracy: {np.round(np.mean(test_accuracy_arr), 4)}\n**\n\n")
 
     return plot_img, plot_mask, plot_predicted
 
 
-def save_model(model, epoch, optimizer, training_loss, validation_loss, training_acc, validation_acc, name_file):
+def save_model(model, epoch, optimizer, training_loss, validation_loss, training_acc, validation_acc, new_dir,
+               name_file):
     r"""
     Save the model.
     :param model: model to saved.
@@ -214,15 +212,9 @@ def save_model(model, epoch, optimizer, training_loss, validation_loss, training
     :param training_acc: training accuracy.
     :param validation_loss: validation loss.
     :param validation_acc: validation accuracy.
+    :param new_dir: new directory created.
     :param name_file: name file to be saved. (Extension file .pth)
     """
-
-    current_date_hour = datetime.datetime.now()
-    new_dir = f"{current_date_hour.year}{current_date_hour.month}{current_date_hour.day}-" \
-              f"{current_date_hour.hour}{current_date_hour.minute}{current_date_hour.second}"
-
-    path = PARENT_DIR + "/" + new_dir
-    os.mkdir(path)
 
     checkpoint = {
         'epoch': epoch,
@@ -235,4 +227,20 @@ def save_model(model, epoch, optimizer, training_loss, validation_loss, training
     }
 
     torch.save(checkpoint, PARENT_DIR + "/" + new_dir + "/" + name_file)
-    print("Model saved!")
+    print(f"[{epoch + 1}] Model saved!\n")
+
+
+def create_directory():
+    r"""
+    Create directory for saved model.
+    """
+
+    current_date_hour = datetime.datetime.now()
+    new_dir = f"{current_date_hour.year}{current_date_hour.month}{current_date_hour.day}-" \
+              f"{current_date_hour.hour}{current_date_hour.minute}{current_date_hour.second}"
+
+    path = PARENT_DIR + "/" + new_dir
+    os.mkdir(path)
+    print("Directory created!\n")
+
+    return new_dir

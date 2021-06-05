@@ -82,11 +82,11 @@ loss_train, loss_valid, accuracy_valid = training_loop(model=model,
                                                        training_loader=training_loader,
                                                        validation_loader=validation_loader)
 end_time = time.time()
-print(f"Training time: {round(((end_time - start_time) / 60), 3)} minutes")
+print(f"** Training time: {round(((end_time - start_time) / 60), 3)} minutes **\n\n")
 
 # Show loss and accuracy
 plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, num_epochs=num_epochs)
 
 # Test
 test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
-plot_test_results(test_images, test_masks, test_predicted, 0)
+plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
