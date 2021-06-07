@@ -15,15 +15,19 @@ class EarlyStopping:
 
     def __call__(self, val_loss):
 
-        if self.best_loss is None or val_loss > self.best_loss:
+        if self.best_loss is None or val_loss < self.best_loss:
             # Update the best loss field
             self.best_loss = val_loss
+            self.counter = 0
 
         elif self.best_loss - val_loss < 0:
 
             self.counter += 1
             print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
 
-            if self.counter >= self.patience:
+            if self.counter == self.patience:
                 print('INFO: Early stopping')
                 self.early_stop = True
+
+        else:
+            self.counter = 0
