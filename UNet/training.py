@@ -4,6 +4,7 @@ from UNet.metric import accuracy
 from UNet.earlyStopping import EarlyStopping
 import datetime
 import os
+from tqdm import tqdm
 
 SHOW_EVERY = 1
 PARENT_DIR = "UNet/ModelSaved"
@@ -51,15 +52,16 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         training_accuracy_batch = 0.0
         num_steps = 0
 
-        for _, batch in enumerate(training_loader):
+        bar = tqdm(training_loader, total=len(training_loader))
+        for X, y in bar:
             torch.cuda.empty_cache()
 
             # Training model
             model.train()
 
             # Split the train data from the labels
-            X = batch[0].to(device)
-            y = batch[1].to(device)
+            X = X.to(device)
+            y = y.to(device)
             y[y > 0] = 1
 
             # Forward pass
@@ -82,6 +84,10 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         training_loss_arr.append(train_loss_for_this_epoch)
         training_accuracy_arr.append(np.divide(training_accuracy_batch, num_steps))
 
+        if epoch % SHOW_EVERY == 0 or epoch == num_epochs - 1:
+            print(f"** Training\n\t\tLoss: {np.round(np.mean(training_loss_arr), 4)}\n\t\t"
+                  f"Accuracy: {np.round(np.mean(training_accuracy_arr), 4)}\n**\n\n")
+
         # Set loss (training) for each epoch
         plot_train_loss[epoch] = train_loss_for_this_epoch
 
@@ -95,11 +101,12 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             model.eval()
 
             # Validation steps
-            for index, batch in enumerate(validation_loader):
+            bar = tqdm(validation_loader, total=len(validation_loader))
+            for X, y in bar:
                 torch.cuda.empty_cache()
 
-                X = batch[0].to(device)
-                y = batch[1].to(device)
+                X = X.to(device)
+                y = y.to(device)
                 y[y > 0] = 1
 
                 y_predicted = model(X)
@@ -120,18 +127,16 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             plot_validate_loss[epoch] = train_loss_for_this_epoch
             plot_validate_accuracy[epoch] = valid_accuracy_for_this_epoch
 
-        if epoch % SHOW_EVERY == 0 or epoch == num_epochs - 1:
-            print(f"** Training\n\t\tLoss: {np.round(np.mean(training_loss_arr), 4)}\n\t\t"
-                  f"Accuracy: {np.round(np.mean(training_accuracy_arr), 4)}\n**\n\n")
-
-            print(f"** Validation\n\t\tLoss: {np.round(np.mean(validation_loss_arr), 4)}\n\t\t"
-                  f"Accuracy: {np.round(np.mean(validation_accuracy_arr), 4)}\n**\n\n")
+            if epoch % SHOW_EVERY == 0 or epoch == num_epochs - 1:
+                print(f"** Validation\n\t\tLoss: {np.round(np.mean(validation_loss_arr), 4)}\n\t\t"
+                      f"Accuracy: {np.round(np.mean(validation_accuracy_arr), 4)}\n**\n\n")
 
         if epoch % 10 == 0:
-            # Save model each 10 epochs
+            # Save model each n epochs
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
                        validation_accuracy_arr, folder, f"model_epoch_{epoch + 1}.pth")
 
+        # Early Stopping
         early_stopping(validation_loss_arr)
         if early_stopping.early_stop or epoch == num_epochs - 1:
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
@@ -172,11 +177,12 @@ def test(test_loader, model, loss_fn):
         test_accuracy_batch = 0.0
         num_steps = 0
 
-        for index, batch in enumerate(test_loader):
+        bar = tqdm(test_loader, total=len(test_loader))
+        for X, y in bar:
             torch.cuda.empty_cache()
 
-            X = batch[0].to(device)
-            y = batch[1].to(device)
+            X = X.to(device)
+            y = y.to(device)
             y[y > 0] = 1
 
             y_predicted = model(X)
