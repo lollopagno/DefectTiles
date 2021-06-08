@@ -4,12 +4,13 @@ import random
 import cv2 as cv
 
 
-def plot_history(loss_train, loss_valid, accuracy_valid, num_epochs):
+def plot_history(loss_train, loss_valid, accuracy_valid, IoU_valid, num_epochs):
     r"""
     Shows the results obtained.
     :param loss_train: loss obtained from the training data
     :param loss_valid: loss obtained from the validation data
     :param accuracy_valid: accuracy obtained
+    :param IoU_valid: intersection over union obtained
     :param num_epochs: number of epochs
     """
 
@@ -33,6 +34,15 @@ def plot_history(loss_train, loss_valid, accuracy_valid, num_epochs):
     plt.ylabel('Accuracy')
     plt.gca().legend(loc='upper right')
     plt.title('Accuracy history')
+    plt.show()
+
+    plt.figure(3)
+    plt.plot(plot_epoch[0:num_epochs], IoU_valid[0:num_epochs], linestyle='-', marker='',
+             linewidth=3, alpha=0.9, label="IoU")
+    plt.xlabel('Epoch number')
+    plt.ylabel('IoU')
+    plt.gca().legend(loc='upper right')
+    plt.title('IoU history')
     plt.show()
 
 
@@ -90,51 +100,33 @@ def plot_test_results(images, masks, predicted, value):
         raise Exception("The value must be less than the number of images")
 
     counter = 1
+
     for i in range(value, len(images)):
-        img = images[i]
-        img = np.squeeze(img)
-        img = img[0, 0, :]
 
-        mask = masks[i]
-        mask = np.squeeze(mask)
-        mask = mask[0, :, :]
+        for k in range(images[i].shape[0]):
+            img = images[i][k]
+            img = np.squeeze(img.detach().cpu().numpy())
+            img = img[0, :, :]
 
-        predict = predicted[i]
-        # TODO eseguire trasformazioni sul tipo della variabile per lavorare sull'immagine
-        # predict = np.squeeze(predict)
-        # predict = predict[0, :, :]
-        # y_pos = predict[0, 1, :, :]
-        # y_neg = predict[0, 0, :, :]
-        # y_test = y_pos >= y_neg
-        y_mask = binary_mask(predict)
+            mask = masks[i][k]
+            mask = mask[0].detach().cpu().numpy()
 
-        # Image
-        plt.title(f'Image: {counter}')
-        plt.imshow(img, cmap="gray")
-        plt.show()
+            predict = predicted[i][k]
+            predict = predict[0].detach().cpu().numpy()
 
-        # Label
-        plt.title(f'Mask: {counter}')
-        plt.imshow(mask, cmap="gray")
-        plt.show()
+            # Image
+            plt.title(f'Image: {counter}')
+            plt.imshow(img, cmap="gray")
+            plt.show()
 
-        # Predict
-        plt.title(f'Predict: {counter}')
-        plt.imshow(predict, cmap="gray")
-        plt.show()
+            # Mask
+            plt.title(f'Mask: {counter}')
+            plt.imshow(mask, cmap="gray")
+            plt.show()
 
-        counter += 1
+            # Predict
+            plt.title(f'Predict: {counter}')
+            plt.imshow(predict, cmap="gray")
+            plt.show()
 
-
-def binary_mask(img):
-    r"""
-    Get the mask from the predicted image from the network.
-    :param img: image from which to get the mask.
-    """
-    mask = img.astype('float32')
-    kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (5, 5))
-    mask = cv.dilate(mask, kernel, iterations=2)
-    mask = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel)
-    mask = cv.morphologyEx(mask, cv.MORPH_OPEN, kernel)
-
-    return mask
+            counter += 1
