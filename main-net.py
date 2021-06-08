@@ -38,7 +38,7 @@ print(f"Size validation: {len(validation_dataset)} - 20%")
 print(f"Size test: {len(test_dataset)} - 10%")
 print(f"Total imgs splitted: {len(training_dataset) + len(validation_dataset) + len(test_dataset)}\n\n")
 
-batch_size = 8
+batch_size = 4
 
 # Training set
 training_loader = DataLoader(training_dataset, batch_size=batch_size, shuffle=False)
@@ -74,18 +74,19 @@ lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
 start_time = time.time()
 
 # Training model
-loss_train, loss_valid, accuracy_valid = training_loop(model=model,
-                                                       num_epochs=num_epochs,
-                                                       optimizer=optimizer,
-                                                       lr_scheduler=lr_scheduler,
-                                                       loss_fn=criterion,
-                                                       training_loader=training_loader,
-                                                       validation_loader=validation_loader)
+loss_train, loss_valid, accuracy_valid, IoU_valid = training_loop(model=model,
+                                                                  num_epochs=num_epochs,
+                                                                  optimizer=optimizer,
+                                                                  lr_scheduler=lr_scheduler,
+                                                                  loss_fn=criterion,
+                                                                  training_loader=training_loader,
+                                                                  validation_loader=validation_loader)
 end_time = time.time()
 print(f"** Training time: {round(((end_time - start_time) / 60), 3)} minutes **\n\n")
 
 # Show loss and accuracy
-plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, num_epochs=num_epochs)
+plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, IoU_valid=IoU_valid,
+             num_epochs=num_epochs)
 
 # Test
 test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)

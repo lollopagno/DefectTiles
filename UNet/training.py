@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from UNet.metric import accuracy
+from UNet.metric import accuracy, IoU
 from UNet.earlyStopping import EarlyStopping
 import datetime
 import os
@@ -36,10 +36,15 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     training_accuracy_arr = []
     validation_accuracy_arr = []
 
+    # Intersection over Union (IoU)
+    training_IoU_arr = []
+    validation_IoU_arr = []
+
     # Parameters to plot loss and accuracy
     plot_train_loss = np.zeros(num_epochs)
     plot_validate_loss = np.zeros(num_epochs)
     plot_validate_accuracy = np.zeros(num_epochs)
+    plot_validate_IoU = np.zeros(num_epochs)
 
     # Early stopping
     early_stopping = EarlyStopping()
@@ -50,6 +55,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         # Training steps
         training_loss_batch = 0.0
         training_accuracy_batch = 0.0
+        training_IoU_batch = 0.0
         num_steps = 0
 
         bar = tqdm(training_loader, total=len(training_loader))
@@ -66,6 +72,26 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
 
             # Forward pass
             y_predicted = model(X)
+
+            if num_steps == 1:
+                import matplotlib.pyplot as plt
+                arr_ = np.squeeze(X.detach().cpu().numpy())
+                arr_ = arr_[0, 0, :, :]
+                plt.imshow(arr_)
+                plt.show()
+
+                arr_ = np.squeeze(y.detach().cpu().numpy())
+                print(f"Mask: {arr_.shape}")
+                arr_ = arr_[0, :, :]
+                plt.imshow(arr_)
+                plt.show()
+
+                arr_ = np.squeeze(y_predicted.detach().cpu().numpy())
+                print(f"Predict: {arr_.shape}")
+                arr_ = arr_[0, :, :]
+                plt.imshow(arr_)
+                plt.show()
+
             loss = loss_fn(y_predicted, y)
 
             optimizer.zero_grad()
@@ -78,15 +104,20 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             training_accuracy_batch += accuracy(y_predicted.cpu().detach().numpy(),
                                                 y.cpu().detach().numpy())
 
+            training_IoU_batch += IoU(y_predicted.cpu().detach().numpy(),
+                                      y.cpu().detach().numpy())
+
             num_steps += 1
 
         train_loss_for_this_epoch = np.divide(training_loss_batch, num_steps)
         training_loss_arr.append(train_loss_for_this_epoch)
         training_accuracy_arr.append(np.divide(training_accuracy_batch, num_steps))
+        training_IoU_arr.append(np.divide(training_IoU_batch, num_steps))
 
         if epoch % SHOW_EVERY == 0 or epoch == num_epochs - 1:
             print(f"** Training\n\t\tLoss: {np.round(np.mean(training_loss_arr), 4)}\n\t\t"
-                  f"Accuracy: {np.round(np.mean(training_accuracy_arr), 4)}\n**\n\n")
+                  f"Accuracy: {np.round(np.mean(training_accuracy_arr), 4)}\n\t\t"
+                  f"IoU: {np.round(np.mean(training_IoU_arr), 4)}\n**\n\n")
 
         # Set loss (training) for each epoch
         plot_train_loss[epoch] = train_loss_for_this_epoch
@@ -97,6 +128,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             num_steps = 0
             validation_loss_batch = 0.0
             validation_accuracy_batch = 0.0
+            validation_IoU_batch = 0.0
 
             model.eval()
 
@@ -114,22 +146,27 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
                 validation_loss_batch += loss.item()
 
                 validation_accuracy_batch += accuracy(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
+                validation_IoU_batch += IoU(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
 
                 num_steps += 1
 
             valid_loss_for_this_epoch = np.divide(validation_loss_batch, num_steps)
             valid_accuracy_for_this_epoch = np.divide(validation_accuracy_batch, num_steps)
+            valid_IoU_for_this_epoch = np.divide(validation_IoU_batch, num_steps)
 
             validation_loss_arr.append(valid_loss_for_this_epoch)
             validation_accuracy_arr.append(valid_accuracy_for_this_epoch)
+            validation_IoU_arr.append(valid_IoU_for_this_epoch)
 
             # Set loss and accuracy (validation) for each epoch
             plot_validate_loss[epoch] = train_loss_for_this_epoch
             plot_validate_accuracy[epoch] = valid_accuracy_for_this_epoch
+            plot_validate_IoU[epoch] = valid_IoU_for_this_epoch
 
             if epoch % SHOW_EVERY == 0 or epoch == num_epochs - 1:
                 print(f"** Validation\n\t\tLoss: {np.round(np.mean(validation_loss_arr), 4)}\n\t\t"
-                      f"Accuracy: {np.round(np.mean(validation_accuracy_arr), 4)}\n**\n\n")
+                      f"Accuracy: {np.round(np.mean(validation_accuracy_arr), 4)}\n\t\t"
+                      f"IoU: {np.round(np.mean(validation_IoU_arr), 4)}\n**\n\n")
 
         if epoch % 10 == 0:
             # Save model each n epochs
@@ -137,7 +174,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
                        validation_accuracy_arr, folder, f"model_epoch_{epoch + 1}.pth")
 
         # Early Stopping
-        early_stopping(validation_loss_arr)
+        early_stopping(np.round(np.mean(validation_loss_arr), 4))
         if early_stopping.early_stop or epoch == num_epochs - 1:
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
                        validation_accuracy_arr, folder, "best_model.pth")
@@ -147,7 +184,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
 
         lr_scheduler.step()
 
-    return plot_train_loss, plot_validate_loss, plot_validate_accuracy
+    return plot_train_loss, plot_validate_loss, plot_validate_accuracy, plot_validate_IoU
 
 
 def test(test_loader, model, loss_fn):
@@ -162,6 +199,7 @@ def test(test_loader, model, loss_fn):
 
     test_loss_arr = []
     test_accuracy_arr = []
+    test_IoU_arr = []
 
     # Parameters to plot the results
     plot_img = []
@@ -175,6 +213,7 @@ def test(test_loader, model, loss_fn):
         # Test steps
         test_loss_batch = 0.0
         test_accuracy_batch = 0.0
+        test_IoU_batch = 0.0
         num_steps = 0
 
         bar = tqdm(test_loader, total=len(test_loader))
@@ -187,22 +226,25 @@ def test(test_loader, model, loss_fn):
 
             y_predicted = model(X)
 
-            plot_img.append(X.cpu().detach().numpy())
-            plot_mask.append(y.cpu().detach().numpy())
-            plot_predicted.append(y_predicted.cpu().detach().numpy())
+            plot_img.append(X)
+            plot_mask.append(y)
+            plot_predicted.append(y_predicted)
 
             loss = loss_fn(y_predicted, y)
             test_loss_batch += loss.item()
 
             test_accuracy_batch += accuracy(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
+            test_IoU_batch += IoU(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
 
             num_steps += 1
 
         test_loss_arr.append(np.divide(test_loss_batch, num_steps))
         test_accuracy_arr.append(np.divide(test_accuracy_batch, num_steps))
+        test_IoU_arr.append(np.divide(test_IoU_batch, num_steps))
 
         print(f"** Test\n\t\tLoss: {np.round(np.mean(test_loss_arr), 4)}\n\t\t"
-              f"Accuracy: {np.round(np.mean(test_accuracy_arr), 4)}\n**\n\n")
+              f"Accuracy: {np.round(np.mean(test_accuracy_arr), 4)}\n\t\t"
+               f"IoU: {np.round(np.mean(test_IoU_arr), 4)}\n**\n\n")
 
     return plot_img, plot_mask, plot_predicted
 
@@ -240,6 +282,11 @@ def create_directory():
     r"""
     Create directory for saved model.
     """
+
+    try:
+        os.mkdir(PARENT_DIR)
+    except:
+        pass
 
     current_date_hour = datetime.datetime.now()
     new_dir = f"{current_date_hour.year}{current_date_hour.month}{current_date_hour.day}-" \
