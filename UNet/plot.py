@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import random
-import cv2 as cv
 
 
 def plot_history(loss_train, loss_valid, accuracy_valid, IoU_valid, num_epochs):
@@ -16,34 +15,31 @@ def plot_history(loss_train, loss_valid, accuracy_valid, IoU_valid, num_epochs):
 
     plot_epoch = np.arange(0, num_epochs)
 
-    plt.figure(1)
-    plt.plot(plot_epoch[0:num_epochs], loss_train[0:num_epochs], linestyle='-', marker='',
-             linewidth=3, alpha=0.9)
-    plt.plot(plot_epoch[0:num_epochs], loss_valid[0:num_epochs], linestyle='-', marker='',
-             linewidth=3, alpha=0.9)
+    print(f"Epoch: {plot_epoch}")
+    print(f"Train: {loss_train[0: num_epochs]}")
+    print(f"Valid: {loss_valid[0: num_epochs]}")
+
+    plt.plot(plot_epoch[0:num_epochs], loss_train[0:num_epochs], color='r', label='Training Loss')
+    plt.plot(plot_epoch[0:num_epochs], loss_valid[0:num_epochs], color='g', label='Validation Loss')
     plt.xlabel('Epoch number')
     plt.ylabel('Loss')
-    plt.gca().legend(('Training loss', 'Validation loss'), loc='upper right')
+    plt.legend(loc="upper right")
     plt.title('Loss history')
     plt.show()
 
-    plt.figure(2)
-    plt.plot(plot_epoch[0:num_epochs], accuracy_valid[0:num_epochs], linestyle='-', marker='',
-             linewidth=3, alpha=0.9, label="Accuracy")
+    plt.plot(plot_epoch[0:num_epochs], accuracy_valid[0:num_epochs], color='r', label='Accuracy')
     plt.xlabel('Epoch number')
     plt.ylabel('Accuracy')
-    plt.gca().legend(loc='upper right')
+    plt.legend(loc='upper right')
     plt.title('Accuracy history')
-    plt.show()
+    # plt.show()
 
-    plt.figure(3)
-    plt.plot(plot_epoch[0:num_epochs], IoU_valid[0:num_epochs], linestyle='-', marker='',
-             linewidth=3, alpha=0.9, label="IoU")
+    plt.plot(plot_epoch[0:num_epochs], IoU_valid[0:num_epochs], color='r', label="IoU")
     plt.xlabel('Epoch number')
     plt.ylabel('IoU')
-    plt.gca().legend(loc='upper right')
+    plt.legend(loc='upper right')
     plt.title('IoU history')
-    plt.show()
+    # plt.show()
 
 
 def sample_dataset(data_loader, batch_size):

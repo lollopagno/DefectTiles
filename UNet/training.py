@@ -73,24 +73,24 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             # Forward pass
             y_predicted = model(X)
 
-            if num_steps == 1:
-                import matplotlib.pyplot as plt
-                arr_ = np.squeeze(X.detach().cpu().numpy())
-                arr_ = arr_[0, 0, :, :]
-                plt.imshow(arr_)
-                plt.show()
-
-                arr_ = np.squeeze(y.detach().cpu().numpy())
-                print(f"Mask: {arr_.shape}")
-                arr_ = arr_[0, :, :]
-                plt.imshow(arr_)
-                plt.show()
-
-                arr_ = np.squeeze(y_predicted.detach().cpu().numpy())
-                print(f"Predict: {arr_.shape}")
-                arr_ = arr_[0, :, :]
-                plt.imshow(arr_)
-                plt.show()
+            # if num_steps == 1:
+            #     import matplotlib.pyplot as plt
+            #     arr_ = np.squeeze(X.detach().cpu().numpy())
+            #     arr_ = arr_[0, 0, :, :]
+            #     plt.imshow(arr_)
+            #     plt.show()
+            #
+            #     arr_ = np.squeeze(y.detach().cpu().numpy())
+            #     print(f"Mask: {arr_.shape}")
+            #     arr_ = arr_[0, :, :]
+            #     plt.imshow(arr_)
+            #     plt.show()
+            #
+            #     arr_ = np.squeeze(y_predicted.detach().cpu().numpy())
+            #     print(f"Predict: {arr_.shape}")
+            #     arr_ = arr_[0, :, :]
+            #     plt.imshow(arr_)
+            #     plt.show()
 
             loss = loss_fn(y_predicted, y)
 
