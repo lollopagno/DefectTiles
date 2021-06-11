@@ -98,7 +98,6 @@ def plot_test_results(images, masks, predicted, value):
     counter = 1
 
     for i in range(value, len(images)):
-
         for k in range(images[i].shape[0]):
             img = images[i][k]
             img = np.squeeze(img.detach().cpu().numpy())

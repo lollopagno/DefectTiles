@@ -19,7 +19,8 @@ CRACK = "MT_Crack"
 FRAY = "MT_Fray"
 FREE = "MT_Free"
 UNEVEN = "MT_Uneven"
-defects = [BLOWHOLE, BREAK, CRACK, FRAY, FREE, UNEVEN]
+#defects = [BLOWHOLE, BREAK, CRACK, FRAY, FREE, UNEVEN]
+defects = [BLOWHOLE]
 datasets = []
 
 n_classes = 1
@@ -66,7 +67,7 @@ print(f'Shape out net: {out.shape} ')
 if SHOW_SUMMARY:
     summary(model, (3, 256, 256))
 
-num_epochs = 1  # 100
+num_epochs = 5  # 100
 criterion = nn.BCELoss()  # Binary cross-entropy
 optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=0.0001)
 lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
@@ -89,5 +90,5 @@ plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accura
              num_epochs=num_epochs)
 
 # Test
-test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
-plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
+# test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
+# plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
