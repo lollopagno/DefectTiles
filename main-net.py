@@ -22,18 +22,31 @@ UNEVEN = "MT_Uneven"
 #defects = [BLOWHOLE, BREAK, CRACK, FRAY, FREE, UNEVEN]
 defects = [BLOWHOLE]
 datasets = []
+train_arr = []
+valid_arr = []
+test_arr = []
 
 n_classes = 1
 
 # Loaded dataset
 print("Loading dataset in progress ...")
 for defect in defects:
+    # Load each type of defect
     datasets.append(DatasetTiles(parent_dir, defect))
 
-dataset = ConcatDataset(datasets)
-print(f"** Dataset loaded correctly! Imgs: {len(dataset)} **\n")
+for dataset in datasets:
+    # Split each dataset in train, validation and test set
+    training_dataset, validation_dataset, test_dataset = train_test_split(dataset)
 
-training_dataset, validation_dataset, test_dataset = train_test_split(dataset)
+    train_arr.append(training_dataset)
+    valid_arr.append(validation_dataset)
+    test_arr.append(test_dataset)
+
+# Concatenate all datasets loaded
+training_dataset, validation_dataset, test_dataset = ConcatDataset(train_arr), ConcatDataset(valid_arr), \
+                                                     ConcatDataset(test_arr)
+
+print(f"** Dataset loaded correctly! Imgs: {len(training_dataset) + len(validation_dataset) + len(test_dataset)} **\n")
 print(f"Size train: {len(training_dataset)} - 70%")
 print(f"Size validation: {len(validation_dataset)} - 20%")
 print(f"Size test: {len(test_dataset)} - 10%")
@@ -90,5 +103,5 @@ plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accura
              num_epochs=num_epochs)
 
 # Test
-# test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
-# plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
+test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
+plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
