@@ -4,7 +4,8 @@ from UNet.ArchitectureNet.utility import get_convolutional_layers, \
     get_relu, \
     get_max_pooling, \
     get_sigmoid, \
-    get_up_sample
+    get_up_sample, \
+    get_batch_normalization
 
 
 class Down(nn.Module):
@@ -23,6 +24,7 @@ class Down(nn.Module):
 
         self.conv_1 = get_convolutional_layers(in_channel, out_channel)
         self.conv_2 = get_convolutional_layers(out_channel, out_channel)
+        self.batch_normalization = get_batch_normalization(out_channel)
         self.activation = get_relu()
         self.max_pooling = get_max_pooling()
 
@@ -32,12 +34,14 @@ class Down(nn.Module):
         """
         out_conv = self.conv_1(x)
         out_relu = self.activation(out_conv)
+        out_batch = self.batch_normalization(out_relu)
 
-        out_conv = self.conv_2(out_relu)
+        out_conv = self.conv_2(out_batch)
         out_relu = self.activation(out_conv)
+        out_batch = self.batch_normalization(out_relu)
 
-        out_pooling = self.max_pooling(out_relu)
-        return out_relu, out_pooling
+        out_pooling = self.max_pooling(out_batch)
+        return out_batch, out_pooling
 
 
 class Bottleneck(nn.Module):
@@ -57,6 +61,7 @@ class Bottleneck(nn.Module):
 
         self.conv_1 = get_convolutional_layers(in_channel, out_channel)
         self.conv_2 = get_convolutional_layers(out_channel, out_channel)
+        self.batch_normalization = get_batch_normalization(out_channel)
         self.activation = get_relu()
 
     def forward(self, x):
@@ -65,11 +70,13 @@ class Bottleneck(nn.Module):
         """
         out_conv = self.conv_1(x)
         out_relu = self.activation(out_conv)
+        out_batch = self.batch_normalization(out_relu)
 
-        out_conv = self.conv_2(out_relu)
+        out_conv = self.conv_2(out_batch)
         out_relu = self.activation(out_conv)
+        out_batch = self.batch_normalization(out_relu)
 
-        return out_relu
+        return out_batch
 
 
 class Up(nn.Module):
@@ -89,6 +96,7 @@ class Up(nn.Module):
         self.up_sample = get_up_sample()
         self.concat = Concat()
         self.activation = get_relu()
+        self.batch_normalization = get_batch_normalization(out_channel)
         self.conv_1 = get_convolutional_layers(in_channel=in_channel, out_channel=out_channel)
         self.conv_2 = get_convolutional_layers(out_channel, out_channel)
 
@@ -102,10 +110,12 @@ class Up(nn.Module):
         out_concat = self.concat(out_up, skip)
         out_conv = self.conv_1(out_concat)
         out_relu = self.activation(out_conv)
-        out_conv = self.conv_2(out_relu)
+        out_batch = self.batch_normalization(out_relu)
+        out_conv = self.conv_2(out_batch)
         out_relu = self.activation(out_conv)
+        out_batch = self.batch_normalization(out_relu)
 
-        return out_relu
+        return out_batch
 
 
 class Concat(nn.Module):
