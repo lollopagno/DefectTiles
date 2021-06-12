@@ -11,6 +11,7 @@ from torchsummary import summary
 
 SHOW_SAMPLES_TRAIN = False
 SHOW_SUMMARY = False
+TRAIN_NET = True
 
 parent_dir = "UNet/DatasetTiles"
 BLOWHOLE = "MT_Blowhole"
@@ -80,28 +81,29 @@ print(f'Shape out net: {out.shape} ')
 if SHOW_SUMMARY:
     summary(model, (3, 256, 256))
 
-num_epochs = 5  # 100
-criterion = nn.BCELoss()  # Binary cross-entropy
-optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=0.0001)
-lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
+if TRAIN_NET:
+    num_epochs = 20   # 100
+    criterion = nn.BCELoss()  # Binary cross-entropy
+    optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=0.0001)
+    lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
 
-start_time = time.time()
+    start_time = time.time()
 
-# Training model
-loss_train, loss_valid, accuracy_valid, IoU_valid = training_loop(model=model,
-                                                                  num_epochs=num_epochs,
-                                                                  optimizer=optimizer,
-                                                                  lr_scheduler=lr_scheduler,
-                                                                  loss_fn=criterion,
-                                                                  training_loader=training_loader,
-                                                                  validation_loader=validation_loader)
-end_time = time.time()
-print(f"** Training time: {round(((end_time - start_time) / 60), 3)} minutes **\n\n")
+    # Training model
+    loss_train, loss_valid, accuracy_valid, IoU_valid = training_loop(model=model,
+                                                                      num_epochs=num_epochs,
+                                                                      optimizer=optimizer,
+                                                                      lr_scheduler=lr_scheduler,
+                                                                      loss_fn=criterion,
+                                                                      training_loader=training_loader,
+                                                                      validation_loader=validation_loader)
+    end_time = time.time()
+    print(f"** Training time: {round(((end_time - start_time) / 60), 3)} minutes **\n\n")
 
-# Show loss and accuracy
-plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, IoU_valid=IoU_valid,
-             num_epochs=num_epochs)
+    # Show loss and accuracy
+    plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, IoU_valid=IoU_valid,
+                 num_epochs=num_epochs)
 
-# Test
-test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
-plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
+    # Test
+    test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
+    plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
