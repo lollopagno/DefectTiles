@@ -60,7 +60,7 @@ def preprocessing(img, convert_to_gray):
         img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
     else:
-        img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        img = cv.cvtColor(img, cv.COLOR_RGB2BGR)
 
     img = img / 255
     img = img.astype(np.float32)
