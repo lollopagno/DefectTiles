@@ -23,11 +23,12 @@ class EarlyStopping:
         elif self.best_loss - val_loss < 0:
 
             self.counter += 1
-            print(f"INFO: Early stopping counter {self.counter} of {self.patience}")
+            print(f"[EARLY STOPPING] --> Counter {self.counter} of {self.patience}")
 
             if self.counter == self.patience:
-                print('INFO: Early stopping')
+                print('[EARLY STOPPING] --> Stop training')
                 self.early_stop = True
 
         else:
             self.counter = 0
+            print("[EARLY STOPPING] --> Reset counter")

@@ -32,11 +32,12 @@ def accuracy(prediction, target):
     return acc
 
 
-def IoU(prediction, target, smooth=1):
+def IoU(prediction, target, smooth=1e-12):
     r"""
     Calculation of IoU.
     :param target: target input.
     :param prediction: predicted input.
+    :param smooth: infinitesimal quantity to avoid division by 0.
     """
     if target.shape != prediction.shape:
         raise Exception("Input target has dimension ", target.shape, ". Predicted values have shape", prediction.shape)

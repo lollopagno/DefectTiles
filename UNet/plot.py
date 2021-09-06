@@ -120,8 +120,9 @@ def plot_test_results(images, masks, predicted, value):
 
             counter += 1
 
-            if counter == 3:
+            # TODO delte in the future
+            if counter == 2:
                 break
 
-        if counter == 3:
+        if counter == 2:
             break

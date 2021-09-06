@@ -10,16 +10,20 @@ SHOW_EVERY = 1
 PARENT_DIR = "UNet/ModelSaved"
 
 
+def _round(values):
+    return round(values, 3)
+
+
 def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_loader, validation_loader):
     r"""
-    Network training
-    :param model: neural network model
-    :param num_epochs: number of epochs
-    :param optimizer: optimize used
-    :param lr_scheduler: scheduler used
-    :param loss_fn: loss function used
-    :param training_loader: training data
-    :param validation_loader: validation data
+    Network training.
+    :param model: neural network model.
+    :param num_epochs: number of epochs.
+    :param optimizer: optimize used.
+    :param lr_scheduler: scheduler used.
+    :param loss_fn: loss function used.
+    :param training_loader: training data.
+    :param validation_loader: validation data.
     """
 
     print("\n** Training **\n")
@@ -50,14 +54,15 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     early_stopping = EarlyStopping()
 
     for epoch in range(0, num_epochs):
-
         # Training loop
+        model.train()
 
         training_loss_batch = []
         training_accuracy_batch = []
         training_IoU_batch = []
 
         train_bar = tqdm(training_loader, total=len(training_loader))
+
         for X, y in train_bar:
             # Split the train data from the labels
             X = X.to(device)
@@ -92,7 +97,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             training_IoU_batch.append(IoU_value)
 
             train_bar.set_description(
-                f"Epoch: {epoch + 1}/{num_epochs}, Loss: {loss_value}, Acc: {accuracy_value}, IoU:{IoU_value}")
+                f"Epoch: {epoch + 1}/{num_epochs}, Loss: {_round(loss_value)}, Acc: {_round(accuracy_value)}, IoU:{_round(IoU_value)}")
 
         training_loss_arr.append(np.mean(training_loss_batch))
         training_accuracy_arr.append(np.mean(training_accuracy_batch))
@@ -122,9 +127,11 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
                 loss = loss_fn(y_predicted, y)
                 loss_value = loss.item()
 
-                accuracy_value = accuracy(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
+                accuracy_value = accuracy(y_predicted.cpu().detach().numpy(),
+                                          y.cpu().detach().numpy())
 
-                IoU_value = IoU(y_predicted.cpu().detach().numpy(), y.cpu().detach().numpy())
+                IoU_value = IoU(y_predicted.cpu().detach().numpy(),
+                                y.cpu().detach().numpy())
 
                 # Added Loss
                 validation_loss_batch.append(loss_value)
@@ -136,7 +143,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
                 validation_IoU_batch.append(IoU_value)
 
                 valid_bar.set_description(
-                    f"Epoch: {epoch + 1}, Loss: {loss_value}, Acc: {accuracy_value}, IoU:{IoU_value}")
+                    f"Epoch: {epoch + 1}, Loss: {_round(loss_value)}, Acc: {_round(accuracy_value)}, IoU:{_round(IoU_value)}")
 
             validation_loss_arr.append(np.mean(validation_loss_batch))
             validation_accuracy_arr.append(np.mean(validation_accuracy_batch))
@@ -147,13 +154,18 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             plot_validate_accuracy.append(validation_accuracy_arr[-1])
             plot_validate_IoU.append(validation_IoU_arr[-1])
 
-            print(
-                f"\n############### Train Loss: {training_loss_arr[-1]}, Train Acc: {training_accuracy_arr[-1]}, Train "
-                f"IOU: {training_IoU_arr[-1]} ###############")
+            if lr_scheduler is not None:
+                last_lr = lr_scheduler.get_last_lr()
+            else:
+                last_lr = optimizer.defaults['lr']
 
             print(
-                f"\n############### Valid Loss: {validation_loss_arr[-1]}, Valid Acc: {validation_accuracy_arr[-1]}, Valid "
-                f"IOU: {validation_IoU_arr[-1]} ###############")
+                f"\n############### Epoch: {epoch + 1}, Train Loss: {_round(training_loss_arr[-1])}, Learning rate: {last_lr},"
+                f" Train Acc: {_round(training_accuracy_arr[-1])}, Train IOU: {_round(training_IoU_arr[-1])} ###############")
+
+            print(
+                f"############### Epoch: {epoch + 1}, Valid Loss: {_round(validation_loss_arr[-1])}, Learning rate: {last_lr},"
+                f" Valid Acc: {_round(validation_accuracy_arr[-1])}, Valid IOU: {_round(validation_IoU_arr[-1])} ###############")
 
         if epoch % 10 == 0:
             # Save model each n epochs
@@ -164,12 +176,13 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         early_stopping(np.round(np.mean(validation_loss_arr), 4))
         if early_stopping.early_stop or epoch == num_epochs - 1:
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
-                       validation_accuracy_arr, folder, "best_model.pth")
+                       validation_accuracy_arr, folder, f"best_model_{epoch}.pth")
 
             # Stop training
             break
 
-        lr_scheduler.step()
+        if lr_scheduler is not None:
+            lr_scheduler.step()
 
     return plot_train_loss, plot_validate_loss, plot_validate_accuracy, plot_validate_IoU
 
@@ -203,6 +216,7 @@ def test(test_loader, model, loss_fn):
         test_IoU_batch = []
 
         test_bar = tqdm(test_loader, total=len(test_loader))
+
         for X, y in test_bar:
             # Split the train data from the labels
             X = X.to(device)

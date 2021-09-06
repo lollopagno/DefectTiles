@@ -20,14 +20,14 @@ CRACK = "MT_Crack"
 FRAY = "MT_Fray"
 FREE = "MT_Free"
 UNEVEN = "MT_Uneven"
-#defects = [BLOWHOLE, BREAK, CRACK, FRAY, FREE, UNEVEN]
-defects = [BLOWHOLE]
+#defects = [BLOWHOLE, BREAK, CRACK, FRAY, FREE, UNEVEN] # TODO delete comment
+defects = [BLOWHOLE, BREAK, FREE]
 datasets = []
 train_arr = []
 valid_arr = []
 test_arr = []
 
-n_classes = 1
+n_classes = 1  # TODO see this!
 
 # Loaded dataset
 print("Loading dataset in progress ...")
@@ -82,10 +82,10 @@ if SHOW_SUMMARY:
     summary(model, (3, 256, 256))
 
 if TRAIN_NET:
-    num_epochs = 20   # 100
+    num_epochs = 10
     criterion = nn.BCELoss()  # Binary cross-entropy
-    optimizer = optim.SGD(model.parameters(), momentum=0.9, lr=0.0001)
-    lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.8)
+    optimizer = optim.SGD(model.parameters(), lr=0.05 , momentum=0.9)
+    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3)
 
     start_time = time.time()
 
