@@ -1,8 +1,9 @@
 import torch
 import numpy as np
+
+from UNet.ArchitectureNet.unet import get_model
 from UNet.metric import accuracy, IoU
 from UNet.earlyStopping import EarlyStopping
-import datetime
 import os
 from tqdm import tqdm
 
@@ -14,7 +15,7 @@ def _round(values):
     return round(values, 3)
 
 
-def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_loader, validation_loader):
+def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_loader, validation_loader, directory):
     r"""
     Network training.
     :param model: neural network model.
@@ -24,12 +25,16 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     :param loss_fn: loss function used.
     :param training_loader: training data.
     :param validation_loader: validation data.
+    :param directory: name directory.
     """
 
     print("\n** Training **\n")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    folder = create_directory()
+    folder = create_directory(directory)
+    with open(PARENT_DIR + "/" + directory + '/log/log.txt', 'w') as f:
+        f.write(
+            f'Training:\nEpochs: {num_epochs},\noptimizer: {optimizer.__class__.__name__},\nLearning Rate: {optimizer.defaults["lr"]}')
 
     # Initialized params before training
     # Loss
@@ -176,7 +181,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         early_stopping(np.round(np.mean(validation_loss_arr), 4))
         if early_stopping.early_stop or epoch == num_epochs - 1:
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
-                       validation_accuracy_arr, folder, f"best_model_{epoch}.pth")
+                       validation_accuracy_arr, folder, f"best_model_{epoch + 1}.pth")
 
             # Stop training
             break
@@ -277,15 +282,42 @@ def save_model(model, epoch, optimizer, training_loss, validation_loss, training
         'Validation Loss': np.mean(validation_loss),
         'Training Accuracy': np.mean(training_acc),
         'Validation Accuracy': np.mean(validation_acc),
+        "directory": new_dir
     }
 
     torch.save(checkpoint, PARENT_DIR + "/" + new_dir + "/" + name_file)
     print(f"[{epoch + 1}] Model saved!\n")
 
 
-def create_directory():
+def load_model(model, optimizer, path):
+    """
+    Load model.
+
+    :param model: model net.
+    :param optimizer: optimizer.
+    :param path: path to load model.
+    """
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    if device == "cuda":
+        file = torch.load(path)
+    else:
+        file = torch.load(path, map_location='cpu')
+
+    model.state_dict(file['state_dict'])
+    optimizer.load_state_dict(file['optimizer_state_dict'])
+    epochs = file['epoch']
+    # directory = file['directory']
+
+    return model, optimizer, epochs
+
+
+def create_directory(new_dir):
     r"""
     Create directory for saved model.
+
+    :param new_dir: name directory.
     """
 
     try:
@@ -293,12 +325,11 @@ def create_directory():
     except:
         pass
 
-    current_date_hour = datetime.datetime.now()
-    new_dir = f"{current_date_hour.year}{current_date_hour.month}{current_date_hour.day}-" \
-              f"{current_date_hour.hour}{current_date_hour.minute}{current_date_hour.second}"
-
     path = PARENT_DIR + "/" + new_dir
     os.mkdir(path)
-    print("Directory created!\n")
+    os.mkdir(path + "/log")
+
+    open(path + "/log/log.txt", "x")
+    print("Directory and file created!\n")
 
     return new_dir

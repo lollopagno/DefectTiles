@@ -3,6 +3,19 @@ import torch.nn as nn
 from UNet.ArchitectureNet import block_net as Block
 
 
+def get_model(num_classes):
+    """
+    Get the model.
+    :param num_classes: number of classes.
+    """
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = Unet(n_classes_out=num_classes)
+    model = model.to(device)
+
+    return model
+
+
 class Unet(nn.Module):
     r"""
     U-net class.

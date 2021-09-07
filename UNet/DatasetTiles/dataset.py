@@ -12,19 +12,19 @@ class DatasetTiles(Dataset):
     Class to load the dataset of a specific defect.
     """
 
-    def __init__(self, parent_dir, image_dir):
+    def __init__(self, parent_dir, defect):
         r"""
         Load the dataset.
         :param parent_dir: root folder.
-        :param image_dir: directory of the defect.
+        :param defect: directory of the defect.
 
         Image format:
             - .jpg: image
             - .png: binay mask
         """
-        self.img_list_path = glob.glob(parent_dir + '/' + image_dir + '/Imgs/*.jpg')
-        self.img_mask_list_path = glob.glob(parent_dir + '/' + image_dir + '/Imgs/*.png')
-        print(f"{image_dir} loaded!")
+        self.img_list_path = glob.glob(parent_dir + '/' + defect + '/Imgs/*.jpg')
+        self.img_mask_list_path = glob.glob(parent_dir + '/' + defect + '/Imgs/*.png')
+        print(f"{defect} loaded!")
 
     def __getitem__(self, index):
         r"""

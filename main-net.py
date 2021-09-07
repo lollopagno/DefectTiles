@@ -1,4 +1,4 @@
-from UNet.ArchitectureNet.unet import Unet
+from UNet.ArchitectureNet.unet import get_model
 from UNet.DatasetTiles.dataset import DatasetTiles, train_test_split
 from UNet.training import training_loop, test
 from UNet.plot import plot_history, sample_dataset, plot_test_results
@@ -7,33 +7,37 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import ConcatDataset, DataLoader
 import time
+import datetime
+import os
 from torchsummary import summary
 
 SHOW_SAMPLES_TRAIN = False
 SHOW_SUMMARY = False
 TRAIN_NET = True
+SHUTDOWN = False
 
-parent_dir = "UNet/DatasetTiles"
+PARENT_MODELS_DIR = "UNet/ModelSaved"
+PARENT_DATASET_DIR = "UNet/DatasetTiles/"
 BLOWHOLE = "MT_Blowhole"
 BREAK = "MT_Break"
 CRACK = "MT_Crack"
 FRAY = "MT_Fray"
 FREE = "MT_Free"
 UNEVEN = "MT_Uneven"
-#defects = [BLOWHOLE, BREAK, CRACK, FRAY, FREE, UNEVEN] # TODO delete comment
-defects = [BLOWHOLE, BREAK, FREE]
+# defects = [BLOWHOLE, BREAK, CRACK, FRAY, FREE, UNEVEN] # TODO delete comment
+defects = [BLOWHOLE]
 datasets = []
 train_arr = []
 valid_arr = []
 test_arr = []
 
-n_classes = 1  # TODO see this!
+num_classes = 1
 
 # Loaded dataset
 print("Loading dataset in progress ...")
 for defect in defects:
     # Load each type of defect
-    datasets.append(DatasetTiles(parent_dir, defect))
+    datasets.append(DatasetTiles(PARENT_DATASET_DIR, defect))
 
 for dataset in datasets:
     # Split each dataset in train, validation and test set
@@ -68,9 +72,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 if SHOW_SAMPLES_TRAIN:
     sample_dataset(data_loader=training_loader, batch_size=batch_size)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = Unet(n_classes_out=n_classes)
-model = model.to(device)
+model = get_model(num_classes)
 
 x = torch.randn(size=(1, 3, 256, 256), dtype=torch.float32).cuda()
 with torch.no_grad():
@@ -82,28 +84,43 @@ if SHOW_SUMMARY:
     summary(model, (3, 256, 256))
 
 if TRAIN_NET:
-    num_epochs = 10
+    num_epochs = 100
     criterion = nn.BCELoss()  # Binary cross-entropy
-    optimizer = optim.SGD(model.parameters(), lr=0.05 , momentum=0.9)
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3)
+    initial_lr = 0.001
+    # optimizer = optim.SGD(model.parameters(), lr=initial_lr, momentum=0.9)
+    optimizer = optim.Adam(model.parameters(), lr=initial_lr)
+    # lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3)
+    lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer, 1 - (1 / num_epochs))
 
     start_time = time.time()
+    current_date_hour = datetime.datetime.now()
+    new_dir = f"{current_date_hour.year}{current_date_hour.month}{current_date_hour.day}-" \
+              f"{current_date_hour.hour}{current_date_hour.minute}{current_date_hour.second}"
 
-    # Training model
-    loss_train, loss_valid, accuracy_valid, IoU_valid = training_loop(model=model,
-                                                                      num_epochs=num_epochs,
-                                                                      optimizer=optimizer,
-                                                                      lr_scheduler=lr_scheduler,
-                                                                      loss_fn=criterion,
-                                                                      training_loader=training_loader,
-                                                                      validation_loader=validation_loader)
-    end_time = time.time()
-    print(f"** Training time: {round(((end_time - start_time) / 60), 3)} minutes **\n\n")
+    try:
+        # Training model
+        loss_train, loss_valid, accuracy_valid, IoU_valid = training_loop(model=model,
+                                                                          num_epochs=num_epochs,
+                                                                          optimizer=optimizer,
+                                                                          lr_scheduler=lr_scheduler,
+                                                                          loss_fn=criterion,
+                                                                          training_loader=training_loader,
+                                                                          validation_loader=validation_loader,
+                                                                          directory=new_dir)
+        end_time = time.time()
+        print(f"** Training time: {round(((end_time - start_time) / 60), 3)} minutes **\n\n")
 
-    # Show loss and accuracy
-    plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, IoU_valid=IoU_valid,
-                 num_epochs=num_epochs)
+        # Show loss and accuracy
+        plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, IoU_valid=IoU_valid,
+                     num_epochs=num_epochs)
 
-    # Test
-    test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
-    plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
+        # Test
+        test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
+        plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
+
+    except Exception as e:
+        with open(PARENT_MODELS_DIR + "/" + new_dir + "/log/log.txt", 'w') as f:
+            f.write(f'Exception: {e}\n\n')
+
+if SHUTDOWN:
+    os.system("shutdown /s /t 1")
