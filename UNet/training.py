@@ -34,7 +34,8 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     folder = create_directory(directory)
     with open(PARENT_DIR + "/" + directory + '/log/log.txt', 'w') as f:
         f.write(
-            f'Training:\nEpochs: {num_epochs},\noptimizer: {optimizer.__class__.__name__},\nLearning Rate: {optimizer.defaults["lr"]}')
+            f'Training:\nEpochs: {num_epochs},\noptimizer: {optimizer.__class__.__name__},\n'
+            f'Loss: {loss_fn.__class__.__name__},\nLearning Rate: {optimizer.defaults["lr"]}')
 
     # Initialized params before training
     # Loss
