@@ -9,7 +9,7 @@ class DatasetTiles(Dataset):
     Class to load the dataset of a specific defect.
     """
 
-    def __init__(self, parent_dir, defect, width, height):
+    def __init__(self, parent_dir, defect, width=256, height=256):
         r"""
         Load the dataset.
         :param parent_dir: root folder.

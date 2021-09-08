@@ -1,8 +1,6 @@
 import torch
 import numpy as np
 
-from UNet.ArchitectureNet.unet import get_model
-from UNet.metric import get_accuracy, get_IoU
 from UNet.earlyStopping import EarlyStopping
 from UNet.metric import get_accuracy, get_IoU
 import os
@@ -38,7 +36,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             f'Training:\nEpochs: {num_epochs},\noptimizer: {optimizer.__class__.__name__},\n'
             f'Loss: {loss_fn.__class__.__name__},\nLearning Rate: {optimizer.defaults["lr"]}')
 
-    ## Initialized params before training ##
+    ## Initialized parameters before training ##
 
     # Loss
     training_loss_arr = []
@@ -61,6 +59,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     # Early stopping
     early_stopping = EarlyStopping()
 
+    last_epoch = 1
     for epoch in range(0, num_epochs):
 
         # Train model
@@ -102,6 +101,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
                        validation_accuracy_arr, folder, f"model_epoch_{epoch + 1}.pth")
 
+        last_epoch += 1
         # Early Stopping
         early_stopping(np.round(validation_loss_arr[-1], 4))
         if early_stopping.early_stop or epoch == num_epochs - 1:
@@ -114,7 +114,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
         if lr_scheduler is not None:
             lr_scheduler.step()
 
-    return plot_train_loss, plot_validate_loss, plot_validate_accuracy, plot_validate_IoU
+    return plot_train_loss, plot_validate_loss, plot_validate_accuracy, plot_validate_IoU, last_epoch
 
 
 def train_one_epoch(model, training_loader, optimizer, loss_fn, currennt_epoch, num_epochs, device):
@@ -182,7 +182,6 @@ def evaluate(model, validation_loader, loss_fn, currennt_epoch, num_epochs, devi
 
     # No grad in validation
     with torch.no_grad():
-
         for X, y in valid_bar:
             X = X.to(device)
             y = y.to(device)
@@ -234,7 +233,6 @@ def testing_net(test_loader, model, loss_fn):
 
     # Test loop
     with torch.no_grad():
-
         # Test steps
         test_loss_batch = []
         test_accuracy_batch = []

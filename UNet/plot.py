@@ -13,22 +13,22 @@ def plot_history(loss_train, loss_valid, accuracy_valid, IoU_valid, num_epochs):
     :param num_epochs: number of epochs
     """
 
-    plt.plot(range(1, num_epochs + 1), loss_train, color='r', label='Training Loss')
-    plt.plot(range(1, num_epochs + 1), loss_valid, color='g', label='Validation Loss')
+    plt.plot(range(1, num_epochs), loss_train, color='r', label='Training Loss')
+    plt.plot(range(1, num_epochs), loss_valid, color='g', label='Validation Loss')
     plt.xlabel('Epoch number')
     plt.ylabel('Loss')
     plt.legend(loc="upper right")
     plt.title('Loss history')
     plt.show()
 
-    plt.plot(range(1, num_epochs + 1), accuracy_valid, color='r', label='Accuracy')
+    plt.plot(range(1, num_epochs), accuracy_valid, color='r', label='Accuracy')
     plt.xlabel('Epoch number')
     plt.ylabel('Accuracy')
     plt.legend(loc='upper right')
     plt.title('Accuracy history')
     plt.show()
 
-    plt.plot(range(1, num_epochs + 1), IoU_valid, color='r', label="IoU")
+    plt.plot(range(1, num_epochs), IoU_valid, color='r', label="IoU")
     plt.xlabel('Epoch number')
     plt.ylabel('IoU')
     plt.legend(loc='upper right')
@@ -119,10 +119,3 @@ def plot_test_results(images, masks, predicted, value):
             plt.show()
 
             counter += 1
-
-            # TODO delte in the future
-            if counter == 2:
-                break
-
-        if counter == 2:
-            break

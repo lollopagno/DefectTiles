@@ -1,6 +1,6 @@
 from UNet.ArchitectureNet.unet import get_model
 from UNet.DatasetTiles.dataset import DatasetTiles, train_test_split
-from UNet.training import training_loop, test
+from UNet.training import training_loop, testing_net
 from UNet.plot import plot_history, sample_dataset, plot_test_results
 import torch
 import torch.nn as nn
@@ -19,13 +19,9 @@ SHUTDOWN = False
 PARENT_MODELS_DIR = "UNet/ModelSaved"
 PARENT_DATASET_DIR = "UNet/DatasetTiles/"
 BLOWHOLE = "MT_Blowhole"
-BREAK = "MT_Break"
 CRACK = "MT_Crack"
-FRAY = "MT_Fray"
 FREE = "MT_Free"
-UNEVEN = "MT_Uneven"
-# defects = [BLOWHOLE, BREAK, CRACK, FRAY, FREE, UNEVEN] # TODO delete comment
-defects = [BLOWHOLE]
+defects = [BLOWHOLE, CRACK, FREE]
 datasets = []
 train_arr = []
 valid_arr = []
@@ -73,6 +69,7 @@ if SHOW_SAMPLES_TRAIN:
     sample_dataset(data_loader=training_loader, batch_size=batch_size)
 
 model = get_model(num_classes)
+model = model.to(torch.device("cuda"))
 
 x = torch.randn(size=(1, 3, 256, 256), dtype=torch.float32).cuda()
 with torch.no_grad():
@@ -85,12 +82,10 @@ if SHOW_SUMMARY:
 
 if TRAIN_NET:
     num_epochs = 100
-    criterion = nn.BCELoss()  # Binary cross-entropy
     initial_lr = 0.001
-    # optimizer = optim.SGD(model.parameters(), lr=initial_lr, momentum=0.9)
-    optimizer = optim.Adam(model.parameters(), lr=initial_lr)
-    # lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3)
-    lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer, 1 - (1 / num_epochs))
+    criterion = nn.BCELoss()  # Binary cross-entropy
+    optimizer = optim.SGD(model.parameters(), lr=initial_lr, momentum=0.9)
+    lr_scheduler = optim.lr_scheduler.ExponentialLR(optimizer, gamma=1 - (1 / num_epochs))
 
     start_time = time.time()
     current_date_hour = datetime.datetime.now()
@@ -99,27 +94,27 @@ if TRAIN_NET:
 
     try:
         # Training model
-        loss_train, loss_valid, accuracy_valid, IoU_valid = training_loop(model=model,
-                                                                          num_epochs=num_epochs,
-                                                                          optimizer=optimizer,
-                                                                          lr_scheduler=lr_scheduler,
-                                                                          loss_fn=criterion,
-                                                                          training_loader=training_loader,
-                                                                          validation_loader=validation_loader,
-                                                                          directory=new_dir)
+        loss_train, loss_valid, accuracy_valid, IoU_valid, epochs = training_loop(model=model,
+                                                                                  num_epochs=num_epochs,
+                                                                                  optimizer=optimizer,
+                                                                                  lr_scheduler=lr_scheduler,
+                                                                                  loss_fn=criterion,
+                                                                                  training_loader=training_loader,
+                                                                                  validation_loader=validation_loader,
+                                                                                  directory=new_dir)
         end_time = time.time()
         print(f"** Training time: {round(((end_time - start_time) / 60), 3)} minutes **\n\n")
 
         # Show loss and accuracy
         plot_history(loss_train=loss_train, loss_valid=loss_valid, accuracy_valid=accuracy_valid, IoU_valid=IoU_valid,
-                     num_epochs=num_epochs)
+                     num_epochs=epochs)
 
         # Test
-        test_images, test_masks, test_predicted = test(test_loader=test_loader, model=model, loss_fn=criterion)
+        test_images, test_masks, test_predicted = testing_net(test_loader=test_loader, model=model, loss_fn=criterion)
         plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
 
     except Exception as e:
-        with open(PARENT_MODELS_DIR + "/" + new_dir + "/log/log.txt", 'w') as f:
+        with open(PARENT_MODELS_DIR + "/" + new_dir + "/log/log.txt", 'a') as f:
             f.write(f'Exception: {e}\n\n')
 
 if SHUTDOWN:

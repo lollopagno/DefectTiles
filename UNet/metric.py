@@ -57,4 +57,4 @@ def get_IoU(prediction, target, smooth=1e-12):
     else:
         IoU_score = (intersection + smooth) / (union + smooth)
 
-    return IoU_score
+    return IoU_score * 100

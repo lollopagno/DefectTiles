@@ -16,11 +16,21 @@ class EarlyStopping:
     def __call__(self, val_loss):
 
         if self.best_loss is None or val_loss < self.best_loss:
+
+            if self.counter > 0:
+                print("[EARLY STOPPING] --> Reset counter")
+
             # Update the best loss field
             self.best_loss = val_loss
             self.counter = 0
 
-        elif self.best_loss - val_loss < 0:
+        elif val_loss == self.best_loss:
+
+            if self.counter > 0:
+                print("[EARLY STOPPING] --> Reset counter")
+            self.counter = 0
+
+        elif val_loss > self.best_loss:
 
             self.counter += 1
             print(f"[EARLY STOPPING] --> Counter {self.counter} of {self.patience}")
@@ -28,7 +38,3 @@ class EarlyStopping:
             if self.counter == self.patience:
                 print('[EARLY STOPPING] --> Stop training')
                 self.early_stop = True
-
-        else:
-            self.counter = 0
-            print("[EARLY STOPPING] --> Reset counter")
