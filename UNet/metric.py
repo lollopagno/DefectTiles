@@ -17,7 +17,7 @@ def numeric_score(prediction, ground_truth):
     return false_positive, false_negative, true_positive, true_negative
 
 
-def accuracy(prediction, target):
+def get_accuracy(prediction, target):
     r"""
     Calculation of accuracy.
     :param target: tagret input.
@@ -32,7 +32,7 @@ def accuracy(prediction, target):
     return acc
 
 
-def IoU(prediction, target, smooth=1e-12):
+def get_IoU(prediction, target, smooth=1e-12):
     r"""
     Calculation of IoU.
     :param target: target input.
