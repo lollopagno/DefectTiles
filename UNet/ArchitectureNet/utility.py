@@ -49,3 +49,11 @@ def get_up_sample(scale_factor: int = 2):
     :param scale_factor: scale factor.
     """
     return nn.Upsample(scale_factor=scale_factor)
+
+
+def get_batch_normalization(out_channel: int):
+    r"""
+    Batch normalization layer.
+    :param out_channel: number of output filters.
+    """
+    return nn.BatchNorm2d(out_channel)
