@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def numeric_score(prediction, ground_truth):
+def numeric_score(prediction, target):
     r"""
     Calculation prediction.
     """
@@ -9,10 +9,10 @@ def numeric_score(prediction, ground_truth):
     prediction[prediction > 0.9] = 1
     prediction[prediction <= 0.9] = 0
 
-    false_positive = np.float(np.sum((prediction == 1) & (ground_truth == 0)))
-    false_negative = np.float(np.sum((prediction == 0) & (ground_truth == 1)))
-    true_positive = np.float(np.sum((prediction == 1) & (ground_truth == 1)))
-    true_negative = np.float(np.sum((prediction == 0) & (ground_truth == 0)))
+    false_positive = np.float(np.sum((prediction == 1) & (target == 0)))
+    false_negative = np.float(np.sum((prediction == 0) & (target == 1)))
+    true_positive = np.float(np.sum((prediction == 1) & (target == 1)))
+    true_negative = np.float(np.sum((prediction == 0) & (target == 0)))
 
     return false_positive, false_negative, true_positive, true_negative
 
@@ -49,12 +49,8 @@ def get_IoU(prediction, target, smooth=1e-12):
     prediction[prediction <= 0.9] = 0
 
     intersection = (prediction * target).sum()  # Logical AND
-    total = (prediction + target).sum()  # Logical OR
-    union = total - intersection
+    union = (prediction + target).sum()  # Logical OR
+    union = union - intersection
+    IoU_score = (intersection + smooth) / (union + smooth)
 
-    if union.all() == 0:
-        IoU_score = 0.0
-    else:
-        IoU_score = (intersection + smooth) / (union + smooth)
-
-    return IoU_score * 100
+    return IoU_score

@@ -93,7 +93,7 @@ def plot_test_results(images, masks, predicted, rows=4):
     masks_copy = masks.copy()
     predicted_copy = predicted.copy()
 
-    fig, axs = plt.subplots(rows, 3, figsize=(64, 32))
+    fig, axs = plt.subplots(rows, 3, figsize=(32, 16))
     axs = axs.ravel()
 
     counter = 0

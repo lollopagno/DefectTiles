@@ -14,7 +14,7 @@ from torchsummary import summary
 SHOW_SAMPLES_TRAIN = False
 SHOW_SUMMARY = False
 TRAIN_NET = True
-SHUTDOWN = False
+SHUTDOWN = True
 
 PARENT_MODELS_DIR = "UNet/ModelSaved"
 PARENT_DATASET_DIR = "UNet/DatasetTiles/"
@@ -81,7 +81,7 @@ if SHOW_SUMMARY:
     summary(model, (3, 256, 256))
 
 if TRAIN_NET:
-    num_epochs = 100
+    num_epochs = 150
     initial_lr = 0.001
     criterion = nn.BCELoss()  # Binary cross-entropy
     optimizer = optim.SGD(model.parameters(), lr=initial_lr, momentum=0.9)
@@ -115,7 +115,9 @@ if TRAIN_NET:
 
     except Exception as e:
         with open(PARENT_MODELS_DIR + "/" + new_dir + "/log/log.txt", 'a') as f:
-            f.write(f'Exception: {e}\n\n')
+            f.write(f'\nException: {e}\n\n')
+
+        print(f"Error: {e}")
 
 if SHUTDOWN:
     os.system("shutdown /s /t 1")

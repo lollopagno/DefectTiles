@@ -10,8 +10,8 @@ SHOW_EVERY = 1
 PARENT_DIR = "UNet/ModelSaved"
 
 
-def _round(values):
-    return round(values, 3)
+def _round(values, decimal=3):
+    return round(values, decimal)
 
 
 def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_loader, validation_loader, directory):
@@ -33,7 +33,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     folder = create_directory(directory)
     with open(PARENT_DIR + "/" + directory + '/log/log.txt', 'w') as f:
         f.write(
-            f'Training:\nEpochs: {num_epochs},\noptimizer: {optimizer.__class__.__name__},\n'
+            f'Training:\nEpochs: {num_epochs},\nOptimizer: {optimizer.__class__.__name__},\n'
             f'Loss: {loss_fn.__class__.__name__},\nLearning Rate: {optimizer.defaults["lr"]}')
 
     ## Initialized parameters before training ##
@@ -60,7 +60,7 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
     early_stopping = EarlyStopping()
 
     last_epoch = 1
-    for epoch in range(0, num_epochs):
+    for epoch in range(1, num_epochs + 1):
 
         # Train model
         loss, accuracy, IoU = train_one_epoch(model, training_loader, optimizer, loss_fn, epoch, num_epochs, device)
@@ -89,24 +89,33 @@ def training_loop(model, num_epochs, optimizer, lr_scheduler, loss_fn, training_
             last_lr = optimizer.defaults['lr']
 
         print(
-            f"\n############### Epoch: {epoch + 1}, Train Loss: {_round(training_loss_arr[-1])}, Learning rate: {last_lr},"
+            f"\n############### Epoch: {epoch}, Train Loss: {_round(training_loss_arr[-1])}, Learning rate: {last_lr},"
             f" Train Acc: {_round(training_accuracy_arr[-1])}, Train IOU: {_round(training_IoU_arr[-1])} ###############")
 
         print(
-            f"############### Epoch: {epoch + 1}, Valid Loss: {_round(validation_loss_arr[-1])}, Learning rate: {last_lr},"
+            f"############### Epoch: {epoch}, Valid Loss: {_round(validation_loss_arr[-1])}, Learning rate: {last_lr},"
             f" Valid Acc: {_round(validation_accuracy_arr[-1])}, Valid IOU: {_round(validation_IoU_arr[-1])} ###############")
 
         if epoch % 10 == 0:
+            # Log training
+            with open(PARENT_DIR + "/" + directory + '/log/log.txt', 'a') as f:
+                f.write(
+                    f"\n############### Epoch: {epoch}, Train Loss: {_round(training_loss_arr[-1])}, Learning rate: {last_lr},"
+                    f" Train Acc: {_round(training_accuracy_arr[-1])}, Train IOU: {_round(training_IoU_arr[-1])} ###############"
+                    f"\n############### Epoch: {epoch}, Valid Loss: {_round(validation_loss_arr[-1])}, Learning rate: {last_lr},"
+                    f" Valid Acc: {_round(validation_accuracy_arr[-1])}, Valid IOU: {_round(validation_IoU_arr[-1])} ###############\n"
+                )
+
             # Save model each n epochs
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
-                       validation_accuracy_arr, folder, f"model_epoch_{epoch + 1}.pth")
+                       validation_accuracy_arr, folder, f"model_epoch_{epoch}.pth")
 
         last_epoch += 1
         # Early Stopping
         early_stopping(np.round(validation_loss_arr[-1], 4))
         if early_stopping.early_stop or epoch == num_epochs - 1:
             save_model(model, epoch, optimizer, training_loss_arr, validation_loss_arr, training_accuracy_arr,
-                       validation_accuracy_arr, folder, f"best_model_{epoch + 1}.pth")
+                       validation_accuracy_arr, folder, f"best_model_{epoch}.pth")
 
             # Stop training
             break
@@ -162,7 +171,7 @@ def train_one_epoch(model, training_loader, optimizer, loss_fn, currennt_epoch, 
         training_IoU_batch.append(IoU_value)
 
         train_bar.set_description(
-            f"Epoch: {currennt_epoch + 1}/{num_epochs}, Loss: {_round(loss_value)}, Acc: {_round(accuracy_value)}, IoU:{_round(IoU_value)}")
+            f"Epoch: {currennt_epoch}/{num_epochs}, Train Loss: {_round(loss_value, 5)}, Train accuracy: {_round(accuracy_value, 5)}, Train IoU:{_round(IoU_value, 5)}")
 
     return np.mean(training_loss_batch), np.mean(training_accuracy_batch), np.mean(training_IoU_batch)
 
@@ -205,7 +214,7 @@ def evaluate(model, validation_loader, loss_fn, currennt_epoch, num_epochs, devi
             validation_IoU_batch.append(IoU_value)
 
             valid_bar.set_description(
-                f"Epoch: {currennt_epoch + 1}/{num_epochs}, Loss: {_round(loss_value)}, Acc: {_round(accuracy_value)}, IoU:{_round(IoU_value)}")
+                f"Epoch: {currennt_epoch}/{num_epochs}, Valid loss: {_round(loss_value, 5)}, Valid accuracy: {_round(accuracy_value, 5)}, Valid IoU:{_round(IoU_value, 5)}")
 
     return np.mean(validation_loss_batch), np.mean(validation_accuracy_batch), np.mean(validation_IoU_batch)
 
