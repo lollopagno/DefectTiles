@@ -77,45 +77,45 @@ def plot_samples(index, img, label):
     plt.show()
 
 
-def plot_test_results(images, masks, predicted, value):
+def plot_test_results(images, masks, predicted, rows=4):
     r"""
     PLot test results.
     :param images: collection of images of the dataset.
     :param masks: collection of masks of the dataset.
     :param predicted: images predicted by the network.
-    :param value: initial value of loop.
+    :param rows: row table.
     """
 
-    if value >= len(images):
-        raise Exception("The value must be less than the number of images")
+    if rows >= len(images):
+        raise Exception("The rows table must be less than the number of images!")
 
-    counter = 1
+    images_copy = images.copy()
+    masks_copy = masks.copy()
+    predicted_copy = predicted.copy()
 
-    for i in range(value, len(images)):
-        for k in range(images[i].shape[0]):
-            img = images[i][k]
-            img = np.squeeze(img.detach().cpu().numpy())
-            img = img[0, :, :]
+    fig, axs = plt.subplots(rows, 3, figsize=(64, 32))
+    axs = axs.ravel()
 
-            mask = masks[i][k]
-            mask = mask[0].detach().cpu().numpy()
+    counter = 0
 
-            predict = predicted[i][k]
-            predict = predict[0].detach().cpu().numpy()
+    for i in range(rows):
+        index = random.randint(0, len(images_copy) - 1)
+        img = images_copy[index]
+        mask = masks_copy[index]
+        predict = predicted_copy[index]
 
-            # Image
-            plt.title(f'Image: {counter}')
-            plt.imshow(img, cmap="gray")
-            plt.show()
+        img = img.permute(1, 2, 0).cpu().numpy()
+        mask = mask.permute(1, 2, 0).cpu().numpy()
+        predict = predict.permute(1, 2, 0).cpu().numpy()
 
-            # Mask
-            plt.title(f'Mask: {counter}')
-            plt.imshow(mask, cmap="gray")
-            plt.show()
+        del images_copy[index]
+        del masks_copy[index]
+        del predicted_copy[index]
 
-            # Predict
-            plt.title(f'Predict: {counter}')
-            plt.imshow(predict, cmap="gray")
-            plt.show()
+        axs[i + counter].imshow(img)
+        axs[i + 1 + counter].imshow(mask)
+        axs[i + 2 + counter].imshow(predict)
 
-            counter += 1
+        counter += 2
+
+    plt.show()

@@ -247,9 +247,10 @@ def testing_net(test_loader, model, loss_fn):
 
             y_predicted = model(X)
 
-            plot_img.append(X)
-            plot_mask.append(y)
-            plot_predicted.append(y_predicted)
+            for i, image in enumerate(X):
+                plot_img.append(image)
+                plot_mask.append(y[i])
+                plot_predicted.append(y_predicted[i])
 
             loss = loss_fn(y_predicted, y)
             loss_value = loss.item()

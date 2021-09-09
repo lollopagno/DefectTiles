@@ -111,7 +111,7 @@ if TRAIN_NET:
 
         # Test
         test_images, test_masks, test_predicted = testing_net(test_loader=test_loader, model=model, loss_fn=criterion)
-        plot_test_results(test_images, test_masks, test_predicted, len(test_images) - 2)
+        plot_test_results(test_images, test_masks, test_predicted, 4)
 
     except Exception as e:
         with open(PARENT_MODELS_DIR + "/" + new_dir + "/log/log.txt", 'a') as f:
