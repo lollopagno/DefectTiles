@@ -7,7 +7,7 @@ from Features.GUI import Button
 from Features.GUI import Settings
 
 SIZE_WINDOW = "400x300"
-ICON = "Resources/Icon/Icon.ico"
+ICON = "Features/Resources/Icon/icon.ico"
 TITLE_WINDOW = "Defect detection of tiles"
 
 
