@@ -36,24 +36,6 @@ def plot_history(loss_train, loss_valid, accuracy_valid, IoU_valid, num_epochs):
     plt.show()
 
 
-def sample_dataset(data_loader, batch_size):
-    r"""
-    Shows an example of the training dataset
-    :param data_loader: dataset
-    :param batch_size: number of batch size
-    """
-
-    counter = 0
-    random_seed_1 = random.randint(0, len(data_loader) - 1)
-    random_seed_2 = random.randint(0, len(data_loader) - 1)
-    for sample_image, sample_label in data_loader:
-
-        if counter == random_seed_1 or counter == random_seed_2:
-            random_batch = random.randint(0, batch_size - 1)
-            plot_samples(random_batch, sample_image, sample_label)
-        counter += 1
-
-
 def plot_samples(index, img, label):
     r"""
     Plot examples of the dataset.
@@ -75,6 +57,27 @@ def plot_samples(index, img, label):
     plt.title('Label')
     plt.imshow(label, cmap="gray")
     plt.show()
+
+
+def sample_dataset(training_dataset):
+    r"""
+    Shows an example of the training dataset
+    :param training_dataset: dataset.
+    """
+
+    for label in training_dataset:
+        fig, axs = plt.subplots(1, 2, figsize=(16, 8))
+
+        random_seed = random.randint(0, len(label) - 1)
+        x, y = label[random_seed]
+
+        x = x[0, :, :]
+        axs[0].imshow(x, cmap='gray')
+
+        y = y[0, :, :]
+        axs[1].imshow(y, cmap='gray')
+
+        plt.show()
 
 
 def plot_test_results(images, masks, predicted, rows=4):
