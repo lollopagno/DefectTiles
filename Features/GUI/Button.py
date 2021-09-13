@@ -12,7 +12,7 @@ RESIZE_HEIGHT_IMAGE = 400
 RESIZE_WIDTH_IMAGE = 450
 CRACKS = "Cracks"
 BLOBS = "Blobs"
-PATH_HISTOGRAM = "Resources/Histogram/Hist"
+PATH_HISTOGRAM = "Features/Resources/Histogram/Hist"
 
 
 def open_file_name():
@@ -97,9 +97,9 @@ class ButtonEntry(Frame):
 
         try:
 
-            if not os.path.isdir("Resources/Histogram"):
+            if not os.path.isdir("Features/Resources/Histogram"):
                 # Create directory histogram
-                os.mkdir("Resources/Histogram")
+                os.mkdir("Features/Resources/Histogram")
 
             filter = self.check_state_checkbox()
             if self.path is not None:
@@ -131,8 +131,12 @@ class ButtonEntry(Frame):
                 end_time = time.time()
                 self.timeLabel.update_time(round(end_time - start_time, 3))
 
-                cv.destroyWindow('Original')
-                cv.destroyWindow('Histogram')
+                try:
+                    cv.destroyWindow('Original')
+                    cv.destroyWindow('Histogram')
+                except:
+                    # No windows opened
+                    pass
 
                 # Sow result
                 if img.shape[1] >= 300:
@@ -158,7 +162,7 @@ class ButtonEntry(Frame):
 
                 os.remove(PATH_HISTOGRAM + file_name)
         except Exception as e:
-            print(e)
+            print(f"Error: {e}")
 
     def set_state_checkbox_filter(self, state):
         r"""

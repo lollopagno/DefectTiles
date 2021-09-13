@@ -3,7 +3,7 @@ import numpy as np
 import math
 import matplotlib.pyplot as plt
 
-PATH_IMAGES = "Resources/Histogram/Hist"
+PATH_IMAGES = "Features/Resources/Histogram/Hist"
 CRACKS = "Cracks"
 MIN_DISTANCE_CRACK = 5
 RANGE_MIN_RADIUS_CRACK = 10

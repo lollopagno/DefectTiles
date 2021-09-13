@@ -1,6 +1,13 @@
 *.idea
 *.pyc
+
+# Resources file
+*Features/Resources/Histogram
+data
 *.ods
 
-Features/Resources/Histogram
-*.ods#
+# Model of UNet saved
+*ModelSaved/
+
+# PyTorch
+*runs
