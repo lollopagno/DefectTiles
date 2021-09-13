@@ -8,13 +8,11 @@ import torch.optim as optim
 from torch.utils.data import ConcatDataset, DataLoader
 import time
 import datetime
-import os
 from torchsummary import summary
 
 SHOW_SAMPLES_TRAIN = False
 SHOW_SUMMARY = False
 TRAIN_NET = True
-SHUTDOWN = True
 
 PARENT_MODELS_DIR = "UNet/ModelSaved"
 PARENT_DATASET_DIR = "UNet/DatasetTiles/"
@@ -66,7 +64,7 @@ test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
 # Show samples train dataset
 if SHOW_SAMPLES_TRAIN:
-    sample_dataset(data_loader=training_loader, batch_size=batch_size)
+    sample_dataset(train_arr)
 
 model = get_model(num_classes)
 model = model.to(torch.device("cuda"))
@@ -81,7 +79,7 @@ if SHOW_SUMMARY:
     summary(model, (3, 256, 256))
 
 if TRAIN_NET:
-    num_epochs = 150
+    num_epochs = 100
     initial_lr = 0.001
     criterion = nn.BCELoss()  # Binary cross-entropy
     optimizer = optim.SGD(model.parameters(), lr=initial_lr, momentum=0.9)
@@ -111,6 +109,7 @@ if TRAIN_NET:
 
         # Test
         test_images, test_masks, test_predicted = testing_net(test_loader=test_loader, model=model, loss_fn=criterion)
+
         plot_test_results(test_images, test_masks, test_predicted, 4)
 
     except Exception as e:
@@ -118,6 +117,3 @@ if TRAIN_NET:
             f.write(f'\nException: {e}\n\n')
 
         print(f"Error: {e}")
-
-if SHUTDOWN:
-    os.system("shutdown /s /t 1")

@@ -11,7 +11,7 @@ PARENT_DATASET_DIR = "UNet/DatasetTiles/"
 BLOWHOLE = "MT_Blowhole"
 CRACK = "MT_Crack"
 FREE = "MT_Free"
-defects = [BLOWHOLE, FREE]
+defects = [BLOWHOLE, CRACK, FREE]
 datasets = []
 train_arr = []
 valid_arr = []
@@ -45,7 +45,7 @@ print(f"Total imgs splitted: {len(training_dataset) + len(validation_dataset) + 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-checkpoint = torch.load("UNet/ModelSaved/202198-16444/model_epoch_81.pth")
+checkpoint = torch.load("UNet/ModelSaved/2021913-91227/best_model_29.pth")  # TODO replace with your path
 
 model = get_model(num_classes)
 model.to(device)
@@ -54,7 +54,6 @@ criterion = nn.BCELoss()
 
 # Test set
 test_loader = DataLoader(test_dataset, batch_size=4, shuffle=False)
-
 
 test_images, test_masks, test_predicted = testing_net(test_loader=test_loader, model=model, loss_fn=criterion)
 plot_test_results(test_images, test_masks, test_predicted, 4)
