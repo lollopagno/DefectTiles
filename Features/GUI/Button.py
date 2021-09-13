@@ -131,8 +131,12 @@ class ButtonEntry(Frame):
                 end_time = time.time()
                 self.timeLabel.update_time(round(end_time - start_time, 3))
 
-                cv.destroyWindow('Original')
-                cv.destroyWindow('Histogram')
+                try:
+                    cv.destroyWindow('Original')
+                    cv.destroyWindow('Histogram')
+                except:
+                    # No windows opened
+                    pass
 
                 # Sow result
                 if img.shape[1] >= 300:
@@ -158,7 +162,7 @@ class ButtonEntry(Frame):
 
                 os.remove(PATH_HISTOGRAM + file_name)
         except Exception as e:
-            print(e)
+            print(f"Error: {e}")
 
     def set_state_checkbox_filter(self, state):
         r"""
