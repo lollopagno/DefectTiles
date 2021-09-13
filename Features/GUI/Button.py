@@ -12,7 +12,7 @@ RESIZE_HEIGHT_IMAGE = 400
 RESIZE_WIDTH_IMAGE = 450
 CRACKS = "Cracks"
 BLOBS = "Blobs"
-PATH_HISTOGRAM = "Resources/Histogram/Hist"
+PATH_HISTOGRAM = "Features/Resources/Histogram/Hist"
 
 
 def open_file_name():
@@ -97,9 +97,9 @@ class ButtonEntry(Frame):
 
         try:
 
-            if not os.path.isdir("Resources/Histogram"):
+            if not os.path.isdir("Features/Resources/Histogram"):
                 # Create directory histogram
-                os.mkdir("Resources/Histogram")
+                os.mkdir("Features/Resources/Histogram")
 
             filter = self.check_state_checkbox()
             if self.path is not None:

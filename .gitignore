@@ -2,7 +2,7 @@
 *.pyc
 
 # Resources file
-*Resources/Histogram
+*Features/Resources/Histogram
 data
 *.ods
 
