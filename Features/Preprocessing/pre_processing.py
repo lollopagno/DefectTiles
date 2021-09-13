@@ -54,7 +54,7 @@ def start(img_original, filter):
     # Morphological operations
     kernel = np.ones((5, 5), np.uint8)
     dilate = cv.dilate(img_edge, (3, 3))
-    erode = cv.dilate(dilate, (3, 3))
+    erode = cv.erode(dilate, (3, 3))
     img_closing = cv.morphologyEx(erode, cv.MORPH_CLOSE, kernel)
 
     return img_closing
